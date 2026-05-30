@@ -14,7 +14,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QSize
 import app_logger
 import logging
-
+import rpt_config
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -48,6 +48,10 @@ class MainWindow(QWidget):
 
         self.logger = app_logger.setup_logging()
         app_logger.attach_qt_logger(self.logger, self.logger_widget)
+        logging.info("CHICKEN RAPTOR IS ON STEROIDS")
+
+        #import config
+        config = rpt_config.RptConfig()
        
         # parameter_page
         contact_page = QWidget(self)
@@ -66,8 +70,8 @@ class MainWindow(QWidget):
         self.show()
 
 
-        logging.info("CHICKEN RAPTOR IS ON STEROIDS")
         
+                
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
