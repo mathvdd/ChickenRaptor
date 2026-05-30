@@ -1,53 +1,46 @@
-from PyQt6.QtGui import QTextCursor
-import sys
-
-class QtLogger:
-    def __init__(self, widget):
-        self.widget = widget
-
-    def write(self, text):
-        #self.widget.moveCursor(QTextCursor.MoveOperation.End)
-        # self.widget.insertPlainText(text)
-        # self.widget.moveCursor(QTextCursor.MoveOperation.End)
-
-        if text:
-            self.widget.insertPlainText(text)
-            self.widget.ensureCursorVisible()
+# app_logging.py
+import logging
+from PyQt6.QtCore import QObject, pyqtSignal
 
 
-    def flush(self):
-        pass
+class QtEmitter(QObject):
+    message = pyqtSignal(str)
 
-class Tee:
-    def __init__(self, *streams):
-        self.streams = streams
+class QtHandler(logging.Handler):
+    def __init__(self, emitter: QtEmitter):
+        super().__init__()
+        self.emitter = emitter
 
-    def write(self, text):
-        for s in self.streams:
-            s.write(text)
-
-    def flush(self):
-        for s in self.streams:
-            s.flush()
+    def emit(self, record):
+        msg = self.format(record)
+        self.emitter.message.emit(msg)
 
 
-class AppLogger():
+def setup_logging(level=logging.INFO):
+    logger = logging.getLogger()
+    logger.setLevel(level)
 
-    def __init__(self, QTextEdit_object):
-        self.original_stdout = sys.stdout
-        self.original_stderr = sys.stderr
+    if logger.handlers:
+        logger.handlers.clear()
 
-        self.qt_logger = QtLogger(QTextEdit_object)
-        
-        sys.stdout = Tee(self.qt_logger, self.original_stdout)
-        sys.stderr = Tee(self.qt_logger, self.original_stderr)
+    formatter = logging.Formatter("[%(levelname)s] %(message)s")
 
-    def info(self, text: str):
-        line = f"[INFO] {text}\n"
-        self.qt_logger.write(line)
-        self.original_stdout.write(line)        
+    console = logging.StreamHandler()
+    console.setFormatter(formatter)
 
-    def title(self, text: str):
-        line = f"[INFO]  ----- {text} -----\n".upper()
-        self.qt_logger.write(line)
-        self.original_stdout.write(line)        
+    logger.addHandler(console)
+
+    return logger
+
+
+def attach_qt_logger(logger, text_widget):
+    emitter = QtEmitter()
+
+    handler = QtHandler(emitter)
+    handler.setFormatter(logging.Formatter("[%(levelname)s] %(message)s"))
+
+    logger.addHandler(handler)
+
+    emitter.message.connect(text_widget.append)
+
+    return emitter

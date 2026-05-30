@@ -12,7 +12,8 @@ from PyQt6.QtWidgets import (
     QTextEdit,
 )
 from PyQt6.QtCore import Qt, QSize
-from app_logger import AppLogger
+import app_logger
+import logging
 
 
 class MainWindow(QWidget):
@@ -39,14 +40,14 @@ class MainWindow(QWidget):
         layout.setRowStretch(4, 1)
 
 
-        self.logger = QTextEdit()
-        self.logger.setReadOnly(True)
+        self.logger_widget = QTextEdit()
+        self.logger_widget.setReadOnly(True)
 #        self.logger.verticalScrollBar().setValue(self.logger.verticalScrollBar().maximum())
 
-        layout.addWidget(self.logger, 0, 1, 5, 1)
+        layout.addWidget(self.logger_widget, 0, 1, 5, 1)
 
-        self.app_logger = AppLogger(self.logger)
-        
+        self.logger = app_logger.setup_logging()
+        app_logger.attach_qt_logger(self.logger, self.logger_widget)
        
         # parameter_page
         contact_page = QWidget(self)
@@ -64,7 +65,8 @@ class MainWindow(QWidget):
 
         self.show()
 
-        self.app_logger.title("CHICKEN RAPTOR IS ON STEROIDS")
+
+        logging.info("CHICKEN RAPTOR IS ON STEROIDS")
         
 
 if __name__ == '__main__':
