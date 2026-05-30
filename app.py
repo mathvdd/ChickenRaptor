@@ -31,8 +31,6 @@ class MainWindow(QWidget):
         tab = QTabWidget(self)
 
 
-
-
         # launch_page
         launch_page = QWidget(self)
         layout = QGridLayout()
@@ -46,14 +44,20 @@ class MainWindow(QWidget):
         app_logger.attach_qt_logger(self.logger, self.logger_widget)
         logging.info("CHICKEN RAPTOR IS ON STEROIDS")
 
+        #import app_config
+        self.config_handler = rpt_config.RptConfig()
+        
+
+        #app buttons
         layout.addWidget(QPushButton('First app'), 0, 0)
         layout.addWidget(QPushButton('Second app'), 1, 0)
         layout.addWidget(QPushButton('Third app'), 2, 0)
-        layout.addWidget(app_widgets.create_automail_button(), 3, 0)
+        layout.addWidget(
+            app_widgets.create_automail_button(
+                self.config_handler.config.get("automail")
+                )
+                , 3, 0)
         layout.setRowStretch(4, 1)
-
-        #import config
-        config = rpt_config.RptConfig()
        
         # parameter_page
         contact_page = QWidget(self)
