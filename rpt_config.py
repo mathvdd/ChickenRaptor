@@ -16,21 +16,27 @@ class RptConfig():
 
     def make_config(self):
         self.config = {
-            "main" : {
-                "p1" : "jkl",
-                "p2" : 21,  
+            "main" : {  
             },
             "app1" : {
-                "p1" : "jkl",
-                "p2" : 21,
             },
             "app2" : {
-                "p1" : "jkl",
-                "p2" : 21,
             },
-            "app3" : {
-                "p1" : "jkl",
-                "p2" : 21,
+            "automail" : {
+                "to_send_folder_path" : "",
+                "xlsx_path" : "",
+                "delete_after_sent" : false,
+                "sender_email" : "",
+                "sender_pwd" : "",
+                "smtp_server" : "smtp.gmail.com",
+                "smtp_port" : 465,
+                "enable_starttls": false,
+                "mail_subject" : "",
+                "mail_body" : "",
+                "colonne_nom" : "Nom",
+                "colonne_prenom" : "Prenom",
+                "colonne_mail" : "Email",
+                "colonne_registre_national" : "RegistreNational"
             },            
         }
 
@@ -46,7 +52,7 @@ class RptConfig():
     def export_config(self):
         logging.info("Exporting config.json")
         with open(self.config_path, 'w') as fp:
-            json.dump(self.config, fp)
+            json.dump(self.config, fp, indent=4)
 
 
 if __name__ == "__main__":
