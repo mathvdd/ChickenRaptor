@@ -6,6 +6,7 @@ from email.message import EmailMessage
 import smtplib
 import send2trash
 from datetime import datetime
+from rpt_config import validate_date
 
 class NRExtractor:
 
@@ -35,19 +36,13 @@ class NRExtractor:
                 res["RN"] = int(line[13:34].replace(" ",""))
             elif line.startswith("Date de début de l'occupation"):
                 date = line[31:48].replace(" ","")
-                try:
-                    datetime.strptime(date, "%d/%m/%Y")
-                    res["date_in"] = date    
-                except:
-                    raise ValueError(f"Invalid date found: {date}")
+                validate_date(date)
+                res["date_in"] = date
 
             elif line.startswith("Date de fin de l'occupation"):
                 date = line[29:46].replace(" ","")
-                try:
-                    datetime.strptime(date, "%d/%m/%Y")
-                    res["date_out"] = date    
-                except:
-                    raise ValueError(f"Invalid date found: {date}")
+                validate_date(date)
+                res["date_out"] = date
 
             if not (None in res.values()):
                 return res
@@ -154,4 +149,5 @@ def send_all_emails(config : dict):
 
         if config["delete_after_sent"].get_value():
             # os.remove(f)
+            logging.info(f"Deleting {f}")
             send2trash.send2trash(f)

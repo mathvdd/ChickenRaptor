@@ -2,6 +2,7 @@ import logging
 import os
 import pymupdf
 from rpt_barcode import read_barcode
+import send2trash
 
 class pdfAnnotater():
     def __init__(self, pdf_path:str):
@@ -33,6 +34,21 @@ class pdfAnnotater():
         #dict of type {page_nb:[(x1,y1),(x2,y2)]}
         for pos in poss:
             self.add_image(self.file_handle[pos[0]-1], pos[1:3], imsize, impath)
+
+    def add_text(self, page, pos, text):
+        pos_x = int(pos[0]*self.r_w)
+        pos_y = int(pos[1]*self.r_h)
+        
+        page.insert_text(
+            pymupdf.Point(pos_x, pos_y),
+            text,
+            # fontsize=fontsize,
+            # color=(0, 0, 0),
+        )
+    
+    def add_texts(self, poss, text):
+        for pos in poss:
+            self.add_text(self.file_handle[pos[0]-1], pos[1:3], text)
 
     
     def resize(self, page_size='a4'):
@@ -68,10 +84,14 @@ def make_all_annotations(config: dict):
     logging.info(f"Found {len(files)} pdf")
 
     for fil in files:
-        #todo change name to barcode instead
+
         input_file = os.path.join(config["input_folder"].get_value(), fil)
-        output_file = os.path.join(config["output_folder"].get_value(),
-            read_barcode(input_file) + '.pdf')
+        if config.get("name_barcode") is not None:
+           output_file = os.path.join(config["output_folder"].get_value(), read_barcode(input_file) + '.pdf')
+        elif config.get("append_to_name") is not None:
+            output_file = os.path.join(config["output_folder"].get_value(),  fil[:-4] + config.get("append_to_name").get_value() + '.pdf')
+        else:
+            output_file = os.path.join(config["output_folder"].get_value(), fil)
 
         logging.info(f"Annotating and moving {input_file} to {output_file}")
 
@@ -98,38 +118,35 @@ def make_all_annotations(config: dict):
                     config["cachet_path"].get_value(),
                     config["cachet_size"].get_value(),
                     )
+            
+            if config.get("x_positions") is not None:
+                ann.add_texts(
+                    config["x_positions"].get_value(),
+                    'x'
+                    )
+
+            if config.get("date_positions") is not None:
+                ann.add_texts(
+                    config["date_positions"].get_value(),
+                    config["date"].get_value()
+                    )
 
             ann.save(output_file)
+        
+        if config.get("delete_original") is True:
+            logging.info(f"Deleting {fil}")
+            send2trash.send2trash(input_file)
 
 
 if __name__ == "__main__":
+    pass
 
-    #list the files in the dir
-    input_folder = "/home/math/Documents/coding/ChickenRaptor/test_data/annotate_contract/"
-    output_folder = os.path.join(input_folder, "done")
-
-    files = []
-    for f in os.listdir(input_folder):
-        if f.endswith('.pdf'):
-            files.append(f)
-
-    for fil in files:
-
-        input_file = os.path.join(input_folder, fil)
-
-        output_file = os.path.join(output_folder, fil[:-4] + '.pdf')
-
-        with pdfAnnotater(input_file) as ann:
-            ann.resize()
-            ann.add_images(
-                {1:[(0.4,0.8),(0.2,0.3)], 2:[(0.1,0.1),(0.7,0.7)]},
-                (80,80),
-                "/home/math/Documents/coding/ChickenRaptor/ress/signature.pdf",
-                )
-            ann.save(output_file)
 
 
 # vectorisation signature:
-# potrace ...png ...svg
+# need to go to some to make a bmp
+# potrace ...bmp ...svg
 # in inskape: select, edit -> resize page to selection
 #  save a copy as
+# or simply tdo it in inkscape
+# or magick file.png -crop 400x180+40+50 +repage -fuzz 15% -transparent white cropped.pdf

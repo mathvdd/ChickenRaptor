@@ -1,21 +1,35 @@
 import os
 import json
 import logging
+from datetime import datetime
+
+
+def validate_date(date : str):
+    try:
+        datetime.strptime(date, "%d/%m/%Y")
+    except ValueError as e:
+        logging.critical(f"Invalid date : {date}", exc_info=True)
 
 class ConfigElement():
     def __init__(self, value, value_type, display="", widget=None):
         self.value = value
         self.value_type = value_type
         self.widget = widget
+        self.display = display
 
     def get_value(self):
         return self.value
     def set_value(self, raw):
 
+        if self.display == "date":
+            validate_date(raw)
+            logging.info(f"Setting date to {raw}")
+
         try:
+
             if isinstance(raw, self.value_type):
                 value = raw
-            
+
             elif self.value_type is bool:
                 value = (raw == "True")
 
@@ -33,7 +47,6 @@ class ConfigElement():
         except TypeError as e:
             logging.critical(f"Could not save {raw} of type {type(raw)}", exc_info=True)
 
-        
 
     def get_value_type(self):
         return self.value_type
@@ -64,9 +77,10 @@ class RptConfig():
     def make_config(self):
         self.config = {
             "General" : {
+                "date" : ConfigElement("", str, display="date"),
                 "signature_size" : ConfigElement([80,80], list), #better compatibility with json
                 "paraphe_size" : ConfigElement([40,40], list),
-                "cachet_size" : ConfigElement([], list),
+                "cachet_size" : ConfigElement([150,75], list),
                 "signature_path" : ConfigElement("", str),
                 "paraphe_path" : ConfigElement("", str),
             },
@@ -75,22 +89,27 @@ class RptConfig():
                 "output_folder" : ConfigElement("", str),
                 "signature_positions" : ConfigElement([], list),
                 "paraphe_positions" : ConfigElement([], list),
+                "rename_to_barcode": ConfigElement(True, bool),
+                "delete_original" : ConfigElement(False, bool),
             },
             "AnnotateC4" : {
-                "signature" : ConfigElement("", str),
                 "x_positions" : ConfigElement([], list), #[[page_nb, x, y],]
+                "date_positions" : ConfigElement([], list),
                 "signature_positions" : ConfigElement([], list),
                 "cachet_positions" : ConfigElement([], list),
+                "append_to_name" : ConfigElement("_signe", str),
             },
             "specific_C4Bis" : {
                 "input_folder" : ConfigElement("", str),
                 "output_folder" : ConfigElement("", str),
                 "cachet_path" : ConfigElement("", str),
+                "delete_original" : ConfigElement(False, bool),
             },
             "specific_C4Mis" : {
                 "input_folder" : ConfigElement("", str),
                 "output_folder" : ConfigElement("", str),
                 "cachet_path" : ConfigElement("", str),
+                "delete_original" : ConfigElement(False, bool),
             },
             "AutoMail" : {
                 "to_send_folder_path" : ConfigElement("", str),
@@ -118,7 +137,10 @@ class RptConfig():
 
         for section, fields in configdict.items():
             for key, value in fields.items():
-                self.config[section][key].set_value(value)
+                if key == "date":
+                    self.config["General"]["date"].set_value(datetime.strftime(datetime.now(),"%d/%m/%Y"))
+                else:
+                    self.config[section][key].set_value(value)
 
     def export_config(self):
         logging.info("Exporting config.json")

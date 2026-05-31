@@ -30,11 +30,11 @@ def create_automail_button(config, service_manager):
     return button
 
 
-def create_annotatecontrat_button(config, service_manager):
+def create_annotate_button(config, service_manager, butname):
 
-    button = QPushButton("AnnotateContrat2Pages")
+    button = QPushButton(butname)
     
-    service_name = "RAPTOR CONTRACT ANNOTATION"
+    service_name = "RAPTOR DOCUMENT ANNOTATION"
     def on_click():
         button.setEnabled(False)
 

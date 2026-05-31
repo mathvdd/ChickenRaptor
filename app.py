@@ -66,14 +66,25 @@ class MainWindow(QWidget):
         #app buttons
         layout.addWidget(app_widgets.create_header_label("Contrats"),0,0)
         layout.addWidget(
-            app_widgets.create_annotatecontrat_button(
+            app_widgets.create_annotate_button(
                 self.config_handler.config.get("AnnotateContrat2Pages") | self.config_handler.config.get("General"),
-                self.service_manager
+                self.service_manager,
+                'AnnotateContrat2Pages'
                 ), 1,0)
         layout.addWidget(QPushButton('TransfertContrat'), 2,0)
         layout.addWidget(app_widgets.create_header_label("C4"),3,0)
-        layout.addWidget(QPushButton('AnnotateC4Bis'), 4,0)
-        layout.addWidget(QPushButton('AnnotateC4Mis'), 5,0)
+        layout.addWidget(
+            app_widgets.create_annotate_button(
+                self.config_handler.config.get("specific_C4Bis") | self.config_handler.config.get("AnnotateC4") | self.config_handler.config.get("General"),
+                self.service_manager,
+                'AnnotateC4Bis'
+                ), 4,0)
+        layout.addWidget(
+            app_widgets.create_annotate_button(
+                self.config_handler.config.get("specific_C4Mis") | self.config_handler.config.get("AnnotateC4") | self.config_handler.config.get("General"),
+                self.service_manager,
+                'AnnotateC4Mis'
+                ), 5,0)
         layout.addWidget(
             app_widgets.create_automail_button(
                 self.config_handler.config.get("AutoMail"),

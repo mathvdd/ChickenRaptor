@@ -20,11 +20,11 @@ class ServiceWorker(QObject):
 
             logging.info(f"Starting {name}")
             func()
-            logging.info(f"... Finished {name}")
+            logging.info(f"... Finished {name}\n")
             self.finished.emit(name)
 
-        except Exception:
-            logging.exception(f"Service {name} failed")
+        except Exception as e:
+            logging.critical(f"Service {name} failed\n", exc_info=True)
             self.failed.emit(name)
 
 
