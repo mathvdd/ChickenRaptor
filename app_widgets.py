@@ -53,6 +53,29 @@ def create_annotate_button(config, service_manager, butname):
     button.clicked.connect(on_click)
     return button
 
+def create_transfert_button(config, service_manager, butname):
+
+    button = QPushButton(butname)
+    
+    service_name = "RAPTOR DOCUMENT TRANSFERT"
+    def on_click():
+        button.setEnabled(False)
+
+        try:
+            service_manager.submit(lambda: rpt_transfert.transfertC4(config), service_name)
+        except Exception as e:
+            logging.critical(f"Failed to launch {service_name}", exc_info=True)
+
+    def on_finished(name):
+        if name == service_name:
+            button.setEnabled(True)
+
+    service_manager.worker.finished.connect(on_finished)
+    service_manager.worker.failed.connect(on_finished)
+    
+    button.clicked.connect(on_click)
+    return button
+
 def create_save_button(config_handler):
     # todo activate button on parameter change
     button = QPushButton("Save")
