@@ -96,7 +96,7 @@ def send_all_emails(config : dict):
             if config["enable_starttls"]:
                 server.starttls()
             server.login(config['sender_email'], config['sender_pwd'])
-            server.send_message(msg)
+            # server.send_message(msg)
 
         if config["delete_after_sent"]:
             # os.remove(f)

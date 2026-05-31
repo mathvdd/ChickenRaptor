@@ -10,6 +10,8 @@ from PyQt6.QtWidgets import (
     QDateEdit,
     QPushButton,
     QTextEdit,
+    QLabel,
+    QScrollArea,
 )
 from PyQt6.QtCore import Qt, QSize
 import app_logger
@@ -58,13 +60,30 @@ class MainWindow(QWidget):
                 )
                 , 3, 0)
         layout.setRowStretch(4, 1)
-       
+
+
         # parameter_page
         contact_page = QWidget(self)
-        layout = QFormLayout()
-        contact_page.setLayout(layout)
-        layout.addRow('Field 1:', QLineEdit(self))
-        layout.addRow('Field 2:', QLineEdit(self))
+
+        page_layout = QGridLayout(contact_page)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+
+        form_widget = QWidget()
+        form_layout = QFormLayout(form_widget)
+
+        for paramdictkey, paramdict in self.config_handler.config.items():
+            form_layout.addRow(app_widgets.create_header_label(paramdictkey))
+
+            for key, value in paramdict.items():
+                edit = QLineEdit(str(value) if value is not None else "")
+                form_layout.addRow(f"{key}:", edit)
+
+        scroll.setWidget(form_widget)
+
+        page_layout.addWidget(scroll)
+        
 
         # finishing startup
         tab.addTab(launch_page, 'Launcher')

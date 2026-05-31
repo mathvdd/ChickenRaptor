@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import (
     QPushButton,
+    QLabel
 )
 import logging
 import rpt_automail
@@ -19,3 +20,11 @@ def create_automail_button(config_automail):
     return button
 
     
+def create_header_label(labelstr):
+    label = QLabel(labelstr.upper())
+    label.setStyleSheet("""
+        font-weight: bold;
+        font-size: 12px;
+        margin-top: 10px;
+    """)
+    return label
