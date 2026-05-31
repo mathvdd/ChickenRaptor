@@ -10,16 +10,38 @@ class ConfigElement():
 
     def get_value(self):
         return self.value
-    def set_value(self, value):
-        self.value = self.value_type(value)
+    def set_value(self, raw):
+
+        try:
+            if isinstance(raw, self.value_type):
+                value = raw
+            
+            elif self.value_type is bool:
+                value = (raw == "True")
+
+            elif self.value_type is int:
+                value = int(raw)
+
+            elif self.value_type in (dict, list):
+                if isinstance(raw, str):
+                    value = json.loads(raw)
+                else:
+                    value = raw
+
+            self.value = value
+
+        except TypeError as e:
+            logging.critical(f"Could not save {raw} of type {type(raw)}", exc_info=True)
+
+        
+
     def get_value_type(self):
         return self.value_type
     def set_widget(self, widget):
         self.widget = widget
-    def get_value_type(self):
-        return self.value_type
 
     def widget2value(self):
+        # print(self.get_value(), type(self.get_value()), self.get_value_type())
         if self.get_value_type() is bool:
             self.set_value(self.widget.currentText() == "True")
         else:
@@ -41,13 +63,36 @@ class RptConfig():
 
     def make_config(self):
         self.config = {
-            "main" : {  
+            "General" : {
+                "signature_size" : ConfigElement([80,80], list), #better compatibility with json
+                "paraphe_size" : ConfigElement([40,40], list),
+                "cachet_size" : ConfigElement([], list),
+                "signature_path" : ConfigElement("", str),
+                "paraphe_path" : ConfigElement("", str),
             },
-            "app1" : {
+            "AnnotateContrat2Pages" : {
+                "input_folder" : ConfigElement("", str),
+                "output_folder" : ConfigElement("", str),
+                "signature_positions" : ConfigElement([], list),
+                "paraphe_positions" : ConfigElement([], list),
             },
-            "app2" : {
+            "AnnotateC4" : {
+                "signature" : ConfigElement("", str),
+                "x_positions" : ConfigElement([], list), #[[page_nb, x, y],]
+                "signature_positions" : ConfigElement([], list),
+                "cachet_positions" : ConfigElement([], list),
             },
-            "automail" : {
+            "specific_C4Bis" : {
+                "input_folder" : ConfigElement("", str),
+                "output_folder" : ConfigElement("", str),
+                "cachet_path" : ConfigElement("", str),
+            },
+            "specific_C4Mis" : {
+                "input_folder" : ConfigElement("", str),
+                "output_folder" : ConfigElement("", str),
+                "cachet_path" : ConfigElement("", str),
+            },
+            "AutoMail" : {
                 "to_send_folder_path" : ConfigElement("", str),
                 "xlsx_path" : ConfigElement("", str),
                 "delete_after_sent" : ConfigElement(False, bool),
@@ -99,3 +144,4 @@ if __name__ == "__main__":
         format="[%(levelname)s] %(message)s"
     )
     conf = RptConfig()
+    logging.info(conf.config["General"]["paraphe_size"].get_value())

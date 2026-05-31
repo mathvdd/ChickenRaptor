@@ -4,17 +4,42 @@ from PyQt6.QtWidgets import (
 )
 import logging
 import rpt_automail
+import rpt_pdf_ann
 
-def create_automail_button(config_automail, service_manager):
+def create_automail_button(config, service_manager):
 
-    button = QPushButton("Envoi des C4")
+    button = QPushButton("AutoMail")
     
     service_name = "RAPTOR EMAIL SERVICE"
     def on_click():
         button.setEnabled(False)
 
         try:
-            service_manager.submit(lambda: rpt_automail.send_all_emails(config_automail), service_name)
+            service_manager.submit(lambda: rpt_automail.send_all_emails(config), service_name)
+        except Exception as e:
+            logging.critical(f"Failed to launch {service_name}", exc_info=True)
+
+    def on_finished(name):
+        if name == service_name:
+            button.setEnabled(True)
+
+    service_manager.worker.finished.connect(on_finished)
+    service_manager.worker.failed.connect(on_finished)
+    
+    button.clicked.connect(on_click)
+    return button
+
+
+def create_annotatecontrat_button(config, service_manager):
+
+    button = QPushButton("AnnotateContrat2Pages")
+    
+    service_name = "RAPTOR CONTRACT ANNOTATION"
+    def on_click():
+        button.setEnabled(False)
+
+        try:
+            service_manager.submit(lambda: rpt_pdf_ann.make_all_annotations(config), service_name)
         except Exception as e:
             logging.critical(f"Failed to launch {service_name}", exc_info=True)
 

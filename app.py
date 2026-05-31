@@ -26,7 +26,7 @@ class MainWindow(QWidget):
         super().__init__()
 
         self.setWindowTitle('ChickenRaptor')
-        self.setFixedSize(QSize(800, 400))
+        self.setFixedSize(QSize(1050, 550))
 
         main_layout = QGridLayout(self)
         self.setLayout(main_layout)
@@ -51,7 +51,7 @@ class MainWindow(QWidget):
                 background-color: rgba(255,255,255,180);
             }
         """)
-        layout.addWidget(self.logger_widget, 0, 1, 7, 1)
+        layout.addWidget(self.logger_widget, 0, 1, 8, 1)
         self.logger = app_logger.setup_logging()
         app_logger.attach_qt_logger(self.logger, self.logger_widget)
         logging.info("CHICKEN RAPTOR IS ON STEROIDS")
@@ -65,17 +65,22 @@ class MainWindow(QWidget):
 
         #app buttons
         layout.addWidget(app_widgets.create_header_label("Contrats"),0,0)
-        layout.addWidget(QPushButton('First app'), 1,0)
-        layout.addWidget(app_widgets.create_header_label("C4"),2,0)
-        layout.addWidget(QPushButton('Second app'), 3,0)
-        layout.addWidget(QPushButton('Third app'), 4,0)
+        layout.addWidget(
+            app_widgets.create_annotatecontrat_button(
+                self.config_handler.config.get("AnnotateContrat2Pages") | self.config_handler.config.get("General"),
+                self.service_manager
+                ), 1,0)
+        layout.addWidget(QPushButton('TransfertContrat'), 2,0)
+        layout.addWidget(app_widgets.create_header_label("C4"),3,0)
+        layout.addWidget(QPushButton('AnnotateC4Bis'), 4,0)
+        layout.addWidget(QPushButton('AnnotateC4Mis'), 5,0)
         layout.addWidget(
             app_widgets.create_automail_button(
-                self.config_handler.config.get("automail"),
+                self.config_handler.config.get("AutoMail"),
                 self.service_manager
                 )
-                , 5, 0)
-        layout.setRowStretch(6, 1)
+                , 6, 0)
+        layout.setRowStretch(7, 1)
 
 
         # parameter_page
