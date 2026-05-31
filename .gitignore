@@ -1,4 +1,3 @@
 __pycache__
-res/*
-!res/ChickenRaptor.ico
+ress/*
 test_data
