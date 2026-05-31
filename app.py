@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import (
     QTextEdit,
     QLabel,
     QScrollArea,
+    QComboBox,
 )
 from PyQt6.QtCore import Qt, QSize
 import app_logger
@@ -49,7 +50,8 @@ class MainWindow(QWidget):
 
         #import app_config
         self.config_handler = rpt_config.RptConfig()
-        
+        self.param_widgets_holder = {}
+
         #initiate service manager
         self.service_manager = ServiceManager()
 
@@ -77,12 +79,23 @@ class MainWindow(QWidget):
         form_widget = QWidget()
         form_layout = QFormLayout(form_widget)
 
-        for paramdictkey, paramdict in self.config_handler.config.items():
-            form_layout.addRow(app_widgets.create_header_label(paramdictkey))
+        page_layout.addWidget(app_widgets.create_save_button(self.config_handler))
 
-            for key, value in paramdict.items():
-                edit = QLineEdit(str(value) if value is not None else "")
+        for section, fields in self.config_handler.config.items():
+            form_layout.addRow(app_widgets.create_header_label(section))
+            for key, element in fields.items():
+                if element.get_value_type() is bool:
+                    edit = QComboBox()
+                    edit.addItems(["True", "False"])
+                    if element.get_value():
+                        edit.setCurrentText("True")
+                    else:
+                        edit.setCurrentText("False")
+                    
+                else:
+                    edit = QLineEdit(str(element.get_value()))
                 form_layout.addRow(f"{key}:", edit)
+                element.set_widget(edit)
 
         scroll.setWidget(form_widget)
 

@@ -28,6 +28,23 @@ def create_automail_button(config_automail, service_manager):
     button.clicked.connect(on_click)
     return button
 
+def create_save_button(config_handler):
+    # todo activate button on parameter change
+    button = QPushButton("Save")
+    
+    def on_click():
+        # button.setEnabled(False)
+        try:
+            config_handler.sync_widget2value()
+            config_handler.export_config()
+
+            logging.info("Parameters saved")
+        except Exception as e:
+            logging.critical(f"Failed to save paramters", exc_info=True)
+    
+    button.clicked.connect(on_click)
+    return button
+
     
 def create_header_label(labelstr):
     label = QLabel(labelstr.upper())

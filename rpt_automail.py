@@ -61,12 +61,12 @@ class xlsxData:
 
 
 def send_all_emails(config : dict):
-    xlsx_data = xlsxData(config["xlsx_path"], config["colonne_registre_national"])
+    xlsx_data = xlsxData(config["xlsx_path"].get_value(), config["colonne_registre_national"].get_value())
     
     files = []
-    for f in os.listdir(config["to_send_folder_path"]):
+    for f in os.listdir(config["to_send_folder_path"].get_value()):
         if f.endswith('_signe.pdf'):
-            files.append(os.path.join(config["to_send_folder_path"], f))
+            files.append(os.path.join(config["to_send_folder_path"].get_value(), f))
     logging.info(f"Found {len(files)} pdf")
     
     for f in files:
@@ -78,10 +78,10 @@ def send_all_emails(config : dict):
             pdf_data = pdf_file.read()
         
         msg = EmailMessage()
-        msg["to"] = pdict[config['colonne_mail']]
-        msg["from"] = config["sender_email"]
-        msg["subject"] = config["mail_subject"]
-        msg.set_content(config["mail_body"])
+        msg["to"] = pdict[config['colonne_mail'].get_value()]
+        msg["from"] = config["sender_email"].get_value()
+        msg["subject"] = config["mail_subject"].get_value()
+        msg.set_content(config["mail_body"].get_value())
         
         msg.add_attachment(
             pdf_data,
@@ -90,14 +90,14 @@ def send_all_emails(config : dict):
             filename=os.path.basename(f)
         )
     
-        logging.info(f"Envoi à {pdict[config['colonne_prenom']]} {pdict[config['colonne_nom']]} ({pdict[config['colonne_mail']]})")    
-        with smtplib.SMTP_SSL(config["smtp_server"], config["smtp_port"]) as server:
+        logging.info(f"Envoi à {pdict[config['colonne_prenom'].get_value()]} {pdict[config['colonne_nom'].get_value()]} ({pdict[config['colonne_mail'].get_value()]})")    
+        with smtplib.SMTP_SSL(config["smtp_server"].get_value(), config["smtp_port"].get_value()) as server:
             # server.set_debuglevel(1)
-            if config["enable_starttls"]:
+            if config["enable_starttls"].get_value():
                 server.starttls()
-            server.login(config['sender_email'], config['sender_pwd'])
+            server.login(config['sender_email'].get_value(), config['sender_pwd'].get_value())
             # server.send_message(msg)
 
-        if config["delete_after_sent"]:
+        if config["delete_after_sent"].get_value():
             # os.remove(f)
             send2trash.send2trash(f)
