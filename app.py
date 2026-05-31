@@ -18,6 +18,7 @@ import app_logger
 import logging
 import rpt_config
 import app_widgets
+from rpt_service_manager import ServiceManager
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -49,6 +50,8 @@ class MainWindow(QWidget):
         #import app_config
         self.config_handler = rpt_config.RptConfig()
         
+        #initiate service manager
+        self.service_manager = ServiceManager()
 
         #app buttons
         layout.addWidget(QPushButton('First app'), 0, 0)
@@ -56,7 +59,8 @@ class MainWindow(QWidget):
         layout.addWidget(QPushButton('Third app'), 2, 0)
         layout.addWidget(
             app_widgets.create_automail_button(
-                self.config_handler.config.get("automail")
+                self.config_handler.config.get("automail"),
+                self.service_manager
                 )
                 , 3, 0)
         layout.setRowStretch(4, 1)
@@ -95,7 +99,9 @@ class MainWindow(QWidget):
         self.show()
 
 
-        
+    def closeEvent(self, event):
+        self.service_manager.stop()
+        event.accept()        
                 
 
 if __name__ == '__main__':
