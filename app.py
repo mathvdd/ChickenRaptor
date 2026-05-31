@@ -43,7 +43,15 @@ class MainWindow(QWidget):
         #logger
         self.logger_widget = QTextEdit()
         self.logger_widget.setReadOnly(True)
-        layout.addWidget(self.logger_widget, 0, 1, 5, 1)
+        self.logger_widget.setStyleSheet("""
+            QTextEdit {
+                background-image: url(static/ChickenRaptor.png);
+                background-repeat: no-repeat;
+                background-position: center;
+                background-color: rgba(255,255,255,180);
+            }
+        """)
+        layout.addWidget(self.logger_widget, 0, 1, 7, 1)
         self.logger = app_logger.setup_logging()
         app_logger.attach_qt_logger(self.logger, self.logger_widget)
         logging.info("CHICKEN RAPTOR IS ON STEROIDS")
@@ -56,16 +64,18 @@ class MainWindow(QWidget):
         self.service_manager = ServiceManager()
 
         #app buttons
-        layout.addWidget(QPushButton('First app'), 0, 0)
-        layout.addWidget(QPushButton('Second app'), 1, 0)
-        layout.addWidget(QPushButton('Third app'), 2, 0)
+        layout.addWidget(app_widgets.create_header_label("Contrats"),0,0)
+        layout.addWidget(QPushButton('First app'), 1,0)
+        layout.addWidget(app_widgets.create_header_label("C4"),2,0)
+        layout.addWidget(QPushButton('Second app'), 3,0)
+        layout.addWidget(QPushButton('Third app'), 4,0)
         layout.addWidget(
             app_widgets.create_automail_button(
                 self.config_handler.config.get("automail"),
                 self.service_manager
                 )
-                , 3, 0)
-        layout.setRowStretch(4, 1)
+                , 5, 0)
+        layout.setRowStretch(6, 1)
 
 
         # parameter_page

@@ -7,7 +7,7 @@ import rpt_automail
 
 def create_automail_button(config_automail, service_manager):
 
-    button = QPushButton("Automail")
+    button = QPushButton("Envoi des C4")
     
     service_name = "RAPTOR EMAIL SERVICE"
     def on_click():
