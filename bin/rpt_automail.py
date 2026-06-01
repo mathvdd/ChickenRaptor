@@ -117,7 +117,7 @@ def send_all_emails(config : dict):
         
         for item in [config['colonne_mail'].get_value(), config['colonne_nom'].get_value(), config['colonne_prenom'].get_value()]:
             if item not in pdict.keys():
-                raise ValueError(f"Parameter "{item}" not found in the .xlsx")
+                raise ValueError(f"Parameter '{item}' not found in the .xlsx")
 
     
         with open(f, "rb") as pdf_file:
