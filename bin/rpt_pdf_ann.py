@@ -132,7 +132,8 @@ def make_all_annotations(config: dict):
 
             ann.save(output_file)
         
-        if config.get("delete_original") is True:
+        
+        if config.get("delete_original").get_value() is True:
             logging.info(f"Deleting {fil}")
             send2trash.send2trash(input_file)
 
