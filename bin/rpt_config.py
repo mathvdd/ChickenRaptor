@@ -65,6 +65,8 @@ class RptConfig():
 
     def __init__(self):
         self.package_path = os.path.dirname(__file__)
+        if not os.path.exists(os.path.join(self.package_path , "..", "ress")):
+            os.makedirs(os.path.join(self.package_path , "..", "ress"))
         self.config_path = os.path.join(self.package_path , "..", "ress", "config.json")
 
         self.make_config()
