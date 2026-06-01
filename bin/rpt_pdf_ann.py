@@ -148,7 +148,7 @@ def make_all_annotations(config: dict):
             os.system(f"xdg-open {config['output_folder'].get_value()}")
         elif os.name == "nt":
             import subprocess
-            subprocess.Popen(r'explorer "{config["output_folder"].get_value()}"')
+            subprocess.Popen(["explorer", config["output_folder"].get_value()])
 
 if __name__ == "__main__":
     pass
