@@ -14,7 +14,9 @@ class pdfAnnotater():
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        pass
+        if self.file_handle:
+            self.file_handle.close()
+            self.file_handle = None
 
     def add_x(self):
         pass
@@ -27,7 +29,8 @@ class pdfAnnotater():
         p1 = pymupdf.Point(pos_x, pos_y)
         p2 = pymupdf.Point(pos_x+size[0], pos_y+size[1])
         # first_page.insert_image(pymupdf.Rect(p1,p2), filename= paraphe)
-        page.show_pdf_page(pymupdf.Rect(p1,p2), pymupdf.open(im),0)
+        with pymupdf.open(im) as img_doc:
+            page.show_pdf_page(pymupdf.Rect(p1, p2),img_doc,0)
 
     def add_images(self, poss, impath, imsize):
         #dict of type {page_nb:[(x1,y1),(x2,y2)]}
@@ -58,12 +61,13 @@ class pdfAnnotater():
             self.file_handle.bake()
             newdoc = pymupdf.open()
 
-            for page in self.pdf:
+            for page in self.file_handle:
 
                 newpage = newdoc.new_page(width=r_w, height=r_h)
                 newpage.show_pdf_page(newpage.rect, self.file_handle, page.number)
 
-            self.file_handler = newdoc
+            self.file_handle.close()
+            self.file_handle = newdoc
             self.r_h = r_h
             self.r_w = r_w
     
@@ -131,10 +135,12 @@ def make_all_annotations(config: dict):
 
             ann.save(output_file)
         
-        
+
         if config.get("delete_original").get_value() is True:
             logging.info(f"Deleting {fil}")
             os.remove(input_file)
+    
+         
 
     if config.get("open_explorer") and config["open_explorer"].get_value():
         logging.info(f"Opening {config['output_folder'].get_value()} in file explorer")
