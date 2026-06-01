@@ -46,4 +46,4 @@ def transfertC4(config):
             os.system(f"xdg-open {source_path}")
         elif os.name == "nt":
             import subprocess
-            subprocess.Popen(r'explorer "{source_path}"')
+            subprocess.Popen(["explorer", source_path])
