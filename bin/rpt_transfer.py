@@ -41,9 +41,10 @@ def transfertC4(config):
         logging.info(f"Removing {file}")
         send2trash.send2trash(file)
 
-    logging.info(f"Opening {source_path} in file explorer")
-    if os.name == "posix":
-        os.system(f"xdg-open {source_path}")
-    elif os.name == "nt":
-        import subprocess
-        subprocess.Popen(r'explorer "{source_path}"')
+    if config.get("open_explorer") and config["open_explorer"].get_value():
+        logging.info(f"Opening {source_path} in file explorer")
+        if os.name == "posix":
+            os.system(f"xdg-open {source_path}")
+        elif os.name == "nt":
+            import subprocess
+            subprocess.Popen(r'explorer "{source_path}"')

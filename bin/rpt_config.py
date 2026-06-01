@@ -94,12 +94,14 @@ class RptConfig():
                 "paraphe_positions" : ConfigElement([], list),
                 "rename_to_barcode": ConfigElement(True, bool),
                 "delete_original" : ConfigElement(False, bool),
+                "open_explorer" : ConfigElement(True, bool),
             },
             "TransfertContrat" : {
                 "source_path" : ConfigElement("", str),
                 "to_clean" : ConfigElement("", str),
                 "dest" : ConfigElement("", str),
                 "dest_JBE" : ConfigElement("", str),
+                "open_explorer" : ConfigElement(True, bool),
             },
             "AnnotateC4" : {
                 "x_positions" : ConfigElement([], list), #[[page_nb, x, y],]

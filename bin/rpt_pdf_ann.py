@@ -85,7 +85,7 @@ def make_all_annotations(config: dict):
 
     for fil in files:
         input_file = os.path.join(config["input_folder"].get_value(), fil)
-        if config.get("rename_to_barcode") is not None:
+        if config.get("rename_to_barcode") and config["rename_to_barcode"].get_value():
             output_file = os.path.join(config["output_folder"].get_value(), read_barcode(input_file) + '.pdf')
         elif config.get("append_to_name") is not None:
             output_file = os.path.join(config["output_folder"].get_value(),  fil[:-4] + config.get("append_to_name").get_value() + '.pdf')
@@ -137,6 +137,13 @@ def make_all_annotations(config: dict):
             logging.info(f"Deleting {fil}")
             send2trash.send2trash(input_file)
 
+    if config.get("open_explorer") and config["open_explorer"].get_value():
+        logging.info(f"Opening {config['output_folder'].get_value()} in file explorer")
+        if os.name == "posix":
+            os.system(f"xdg-open {config['output_folder'].get_value()}")
+        elif os.name == "nt":
+            import subprocess
+            subprocess.Popen(r'explorer "{config["output_folder"].get_value()}"')
 
 if __name__ == "__main__":
     pass
