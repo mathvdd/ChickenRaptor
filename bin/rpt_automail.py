@@ -134,7 +134,7 @@ def send_all_emails(config : dict):
             replace_in_text(
             config["mail_body"].get_value(),
             {"prenom": pdict[config['colonne_prenom'].get_value()].lower().capitalize()},
-            "mail_body")
+            "mail_body").replace("\\n", "\n")
             )
 
         # msg.add_attachment(
