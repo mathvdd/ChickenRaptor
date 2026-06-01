@@ -1,4 +1,3 @@
-# app_logging.py
 import logging
 from PyQt6.QtCore import QObject, pyqtSignal
 from html import escape
