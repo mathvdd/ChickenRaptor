@@ -2,8 +2,6 @@
 cd /d "%~dp0"
 py -m pip install -r requirements.txt
 
-@echo off
-
 powershell ^
  "$ws = New-Object -ComObject WScript.Shell;" ^
  "$desktop = [Environment]::GetFolderPath('Desktop');" ^
