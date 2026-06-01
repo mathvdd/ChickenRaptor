@@ -1,4 +1,8 @@
 @echo off
+cd /d "%~dp0"
+py -m pip install -r requirements.txt
+
+@echo off
 
 powershell ^
  "$ws = New-Object -ComObject WScript.Shell;" ^
@@ -9,3 +13,9 @@ powershell ^
  "$s.WorkingDirectory = '%~dp0';" ^
  "$s.IconLocation = '%~dp0assets\ChickenRaptor_small.ico';" ^
  "$s.Save()"
+
+echo.
+echo created shortcut on desktop
+echo.
+
+pause
