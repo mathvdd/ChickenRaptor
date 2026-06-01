@@ -1,7 +1,6 @@
 import os
 import shutil
 import logging
-import send2trash
 
 def transfertC4(config):
     source_path = config["source_path"].get_value()
@@ -27,7 +26,7 @@ def transfertC4(config):
     for file in to_transfert:
         logging.info(f"Move {file} to destination repository")
         shutil.copy(os.path.join(source_path,file), os.path.join(dest_path,file))
-        send2trash.send2trash(os.path.join(source_path,file))
+        os.remove(os.path.join(source_path,file))
 
     not_transfered = [f for f in os.listdir(source_path) if os.path.isfile(os.path.join(source_path,f))]
     if len(not_transfered) > 0:
@@ -39,7 +38,7 @@ def transfertC4(config):
     logging.info(f"{len(to_del)} files to clean from {to_clean_path}")
     for file in to_del:
         logging.info(f"Removing {file}")
-        send2trash.send2trash(file)
+        os.remove(file)
 
     if config.get("open_explorer") and config["open_explorer"].get_value():
         logging.info(f"Opening {source_path} in file explorer")

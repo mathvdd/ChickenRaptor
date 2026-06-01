@@ -2,7 +2,6 @@ import logging
 import os
 import pymupdf
 from rpt_barcode import read_barcode
-import send2trash
 
 class pdfAnnotater():
     def __init__(self, pdf_path:str):
@@ -135,7 +134,7 @@ def make_all_annotations(config: dict):
         
         if config.get("delete_original").get_value() is True:
             logging.info(f"Deleting {fil}")
-            send2trash.send2trash(input_file)
+            os.remove(input_file)
 
     if config.get("open_explorer") and config["open_explorer"].get_value():
         logging.info(f"Opening {config['output_folder'].get_value()} in file explorer")

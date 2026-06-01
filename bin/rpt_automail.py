@@ -4,7 +4,6 @@ import pypdf
 import pandas as pd
 from email.message import EmailMessage
 import smtplib
-import send2trash
 from datetime import datetime
 from rpt_config import validate_date
 
@@ -155,4 +154,4 @@ def send_all_emails(config : dict):
         if config["delete_after_sent"].get_value():
             # os.remove(f)
             logging.info(f"Deleting {f}")
-            send2trash.send2trash(f)
+            os.remove(f)
