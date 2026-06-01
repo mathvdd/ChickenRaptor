@@ -1,6 +1,10 @@
 import logging
 
-from PyQt6.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
+from PyQt6.QtCore import QObject, QThread, pyqtSignal, pyqtSlot, QUrl
+
+
+
+import os
 
 
 class ServiceWorker(QObject):
@@ -13,6 +17,10 @@ class ServiceWorker(QObject):
         super().__init__()
 
         self.execute.connect(self.run_job)
+    
+
+    def play_sound(self):
+        self.audio.play()
 
     @pyqtSlot(object, str)
     def run_job(self, func, name):
@@ -24,8 +32,9 @@ class ServiceWorker(QObject):
             self.finished.emit(name)
 
         except Exception as e:
-            logging.critical(f"Service {name} failed\n", exc_info=True)
+            logging.exception(f"Service {name} failed\n", exc_info=True)
             self.failed.emit(name)
+
 
 
 class ServiceManager:

@@ -1,6 +1,7 @@
 # app_logging.py
 import logging
 from PyQt6.QtCore import QObject, pyqtSignal
+from html import escape
 
 
 class QtEmitter(QObject):
@@ -10,10 +11,29 @@ class QtHandler(logging.Handler):
     def __init__(self, emitter: QtEmitter):
         super().__init__()
         self.emitter = emitter
-
     def emit(self, record):
-        msg = self.format(record)
-        self.emitter.message.emit(msg)
+        msg = escape(self.format(record))
+
+        color = {
+            "INFO": "green",
+            "WARNING": "orange",
+            "ERROR": "red",
+            "CRITICAL": "darkred",
+            "DEBUG": "gray",
+        }.get(record.levelname, "black")
+
+        prefix = escape(f"[{record.levelname}]")
+
+        html = msg.replace(
+            prefix,
+            f'<span style="color:{color}">{prefix}</span>',
+            1
+        )
+
+        # Preserve traceback line breaks
+        html = html.replace("\n", "<br>")
+
+        self.emitter.message.emit(html)
 
 
 def setup_logging(level=logging.INFO):
@@ -37,7 +57,9 @@ def attach_qt_logger(logger, text_widget):
     emitter = QtEmitter()
 
     handler = QtHandler(emitter)
-    handler.setFormatter(logging.Formatter("[%(levelname)s] %(message)s"))
+    handler.setFormatter(
+        logging.Formatter("[%(levelname)s] %(message)s")
+    )
 
     logger.addHandler(handler)
 

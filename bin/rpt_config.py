@@ -60,11 +60,12 @@ class ConfigElement():
         else:
             self.set_value(self.widget.text())
 
+
 class RptConfig():
 
     def __init__(self):
-        self.package_path = os.path.join(os.path.dirname(__file__)) 
-        self.config_path = os.path.join(self.package_path , "ress", "config.json")
+        self.package_path = os.path.dirname(__file__)
+        self.config_path = os.path.join(self.package_path , "..", "ress", "config.json")
 
         self.make_config()
         if not os.path.isfile(self.config_path):

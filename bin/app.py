@@ -1,5 +1,6 @@
 import sys
-from PyQt6.QtGui import QTextCursor
+import os
+from PyQt6.QtGui import QTextCursor, QPixmap
 from PyQt6.QtWidgets import (
     QApplication,
     QWidget,
@@ -20,10 +21,17 @@ import logging
 import rpt_config
 import app_widgets
 from rpt_service_manager import ServiceManager
+import rpt_player
 
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
+
+        app = QApplication.instance()
+        if app is not None:
+            font = app.font()
+            font.setPointSize(11)
+            app.setFont(font)
 
         self.setWindowTitle('ChickenRaptor')
         self.setFixedSize(QSize(1050, 550))
@@ -43,14 +51,14 @@ class MainWindow(QWidget):
         #logger
         self.logger_widget = QTextEdit()
         self.logger_widget.setReadOnly(True)
-        self.logger_widget.setStyleSheet("""
-            QTextEdit {
-                background-image: url(static/ChickenRaptor.png);
-                background-repeat: no-repeat;
-                background-position: center;
-                background-color: rgba(255,255,255,180);
-            }
-        """)
+        # self.logger_widget.setStyleSheet("""
+        #     QTextEdit {
+        #         background-image: url(assets/ChickenRaptor.png);
+        #         background-repeat: no-repeat;
+        #         background-position: center;
+        #         background-color: rgba(255,255,255,180);
+        #     }
+        # """)
         layout.addWidget(self.logger_widget, 0, 1, 8, 1)
         self.logger = app_logger.setup_logging()
         app_logger.attach_qt_logger(self.logger, self.logger_widget)
@@ -59,6 +67,8 @@ class MainWindow(QWidget):
         #import app_config
         self.config_handler = rpt_config.RptConfig()
         self.param_widgets_holder = {}
+        
+        self.player = rpt_player.Player()
 
         #initiate service manager
         self.service_manager = ServiceManager()
@@ -69,33 +79,44 @@ class MainWindow(QWidget):
             app_widgets.create_annotate_button(
                 self.config_handler.config.get("AnnotateContrat2Pages") | self.config_handler.config.get("General"),
                 self.service_manager,
-                'AnnotateContrat2Pages'
+                'AnnotateContrat2Pages',
+                self.player
                 ), 1,0)
         layout.addWidget(
-            app_widgets.create_annotate_button(
+            app_widgets.create_transfer_button(
                 self.config_handler.config.get("TransfertContrat"),
                 self.service_manager,
-                'TransfertContrat'
+                'TransfertContrat',
+                self.player
                 ), 2,0)
         layout.addWidget(app_widgets.create_header_label("C4"),3,0)
         layout.addWidget(
             app_widgets.create_annotate_button(
                 self.config_handler.config.get("specific_C4Bis") | self.config_handler.config.get("AnnotateC4") | self.config_handler.config.get("General"),
                 self.service_manager,
-                'AnnotateC4Bis'
+                'AnnotateC4Bis',
+                self.player
                 ), 4,0)
         layout.addWidget(
             app_widgets.create_annotate_button(
                 self.config_handler.config.get("specific_C4Mis") | self.config_handler.config.get("AnnotateC4") | self.config_handler.config.get("General"),
                 self.service_manager,
-                'AnnotateC4Mis'
+                'AnnotateC4Mis',
+                self.player
                 ), 5,0)
         layout.addWidget(
             app_widgets.create_automail_button(
                 self.config_handler.config.get("AutoMail"),
-                self.service_manager
+                self.service_manager,
+                self.player
                 )
                 , 6, 0)
+        
+        label = QLabel(self)
+        pixmap = QPixmap(os.path.join(self.config_handler.package_path, '..', 'assets', 'ChickenRaptor_medium.png'))
+        label.setPixmap(pixmap)
+        layout.addWidget(label, 7, 0)
+
         layout.setRowStretch(7, 1)
 
 
@@ -110,7 +131,7 @@ class MainWindow(QWidget):
         form_widget = QWidget()
         form_layout = QFormLayout(form_widget)
 
-        page_layout.addWidget(app_widgets.create_save_button(self.config_handler))
+        page_layout.addWidget(app_widgets.create_save_button(self.config_handler, self.player))
 
         for section, fields in self.config_handler.config.items():
             form_layout.addRow(app_widgets.create_header_label(section))

@@ -1,12 +1,14 @@
 from PyQt6.QtWidgets import (
     QPushButton,
-    QLabel
+    QLabel,
 )
+from PyQt6.QtGui import QPainter, QPixmap
 import logging
 import rpt_automail
 import rpt_pdf_ann
+import rpt_transfer
 
-def create_automail_button(config, service_manager):
+def create_automail_button(config, service_manager, player = None):
 
     button = QPushButton("AutoMail")
     
@@ -22,6 +24,9 @@ def create_automail_button(config, service_manager):
     def on_finished(name):
         if name == service_name:
             button.setEnabled(True)
+            if player:
+                player.randomly_play_random()
+
 
     service_manager.worker.finished.connect(on_finished)
     service_manager.worker.failed.connect(on_finished)
@@ -30,7 +35,7 @@ def create_automail_button(config, service_manager):
     return button
 
 
-def create_annotate_button(config, service_manager, butname):
+def create_annotate_button(config, service_manager, butname, player = None):
 
     button = QPushButton(butname)
     
@@ -46,6 +51,8 @@ def create_annotate_button(config, service_manager, butname):
     def on_finished(name):
         if name == service_name:
             button.setEnabled(True)
+            if player:
+                player.randomly_play_random()
 
     service_manager.worker.finished.connect(on_finished)
     service_manager.worker.failed.connect(on_finished)
@@ -53,7 +60,7 @@ def create_annotate_button(config, service_manager, butname):
     button.clicked.connect(on_click)
     return button
 
-def create_transfert_button(config, service_manager, butname):
+def create_transfer_button(config, service_manager, butname, player = None):
 
     button = QPushButton(butname)
     
@@ -62,7 +69,7 @@ def create_transfert_button(config, service_manager, butname):
         button.setEnabled(False)
 
         try:
-            service_manager.submit(lambda: rpt_transfert.transfertC4(config), service_name)
+            service_manager.submit(lambda: rpt_transfer.transfertC4(config), service_name)
         except Exception as e:
             logging.critical(f"Failed to launch {service_name}", exc_info=True)
 
@@ -70,13 +77,16 @@ def create_transfert_button(config, service_manager, butname):
         if name == service_name:
             button.setEnabled(True)
 
+            if player:
+                player.randomly_play_random()
+
     service_manager.worker.finished.connect(on_finished)
     service_manager.worker.failed.connect(on_finished)
     
     button.clicked.connect(on_click)
     return button
 
-def create_save_button(config_handler):
+def create_save_button(config_handler, player = None):
     # todo activate button on parameter change
     button = QPushButton("Save")
     
@@ -89,6 +99,10 @@ def create_save_button(config_handler):
             logging.info("Parameters saved")
         except Exception as e:
             logging.critical(f"Failed to save paramters", exc_info=True)
+
+        finally:
+            if player:
+                player.randomly_play_random()
     
     button.clicked.connect(on_click)
     return button
@@ -102,3 +116,4 @@ def create_header_label(labelstr):
         margin-top: 10px;
     """)
     return label
+
