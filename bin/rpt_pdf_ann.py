@@ -84,10 +84,9 @@ def make_all_annotations(config: dict):
     logging.info(f"Found {len(files)} pdf")
 
     for fil in files:
-
         input_file = os.path.join(config["input_folder"].get_value(), fil)
-        if config.get("name_barcode") is not None:
-           output_file = os.path.join(config["output_folder"].get_value(), read_barcode(input_file) + '.pdf')
+        if config.get("rename_to_barcode") is not None:
+            output_file = os.path.join(config["output_folder"].get_value(), read_barcode(input_file) + '.pdf')
         elif config.get("append_to_name") is not None:
             output_file = os.path.join(config["output_folder"].get_value(),  fil[:-4] + config.get("append_to_name").get_value() + '.pdf')
         else:

@@ -114,6 +114,11 @@ def send_all_emails(config : dict):
         with NRExtractor(f) as ext:
             pdf_info = ext.extract()
         pdict = xlsx_data.return_from_RN(pdf_info["RN"])
+        
+        for item in [config['colonne_mail'].get_value(), config['colonne_nom'].get_value(), config['colonne_prenom'].get_value()]:
+            if item not in pdict.keys():
+                raise ValueError(f"Parameter "{item}" not found in the .xlsx")
+
     
         with open(f, "rb") as pdf_file:
             pdf_data = pdf_file.read()
