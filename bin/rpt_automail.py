@@ -136,12 +136,12 @@ def send_all_emails(config : dict):
             "mail_body").replace("\\n", "\n")
             )
 
-        # msg.add_attachment(
-        #     pdf_data,
-        #     maintype="application",
-        #     subtype="pdf",
-        #     filename=os.path.basename(f)
-        # )
+        msg.add_attachment(
+            pdf_data,
+            maintype="application",
+            subtype="pdf",
+            filename=os.path.basename(f)
+        )
     
         logging.info(f"Envoi à {pdict[config['colonne_prenom'].get_value()]} {pdict[config['colonne_nom'].get_value()]} ({pdict[config['colonne_mail'].get_value()]})")    
         with smtplib.SMTP_SSL(config["smtp_server"].get_value(), config["smtp_port"].get_value()) as server:
