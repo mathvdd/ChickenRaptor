@@ -24,6 +24,6 @@ class Player():
     def play_random(self):
         random.choice(self.sounds).play()
 
-    def randomly_play_random(self, chance=8):
+    def randomly_play_random(self, chance=1):
         if random.randint(1, chance) == 1:
             self.play_random()

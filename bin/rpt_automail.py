@@ -33,13 +33,24 @@ class NRExtractor:
 
             if line.startswith("TRAVAILLEUR"):
                 res["RN"] = int(line[13:34].replace(" ",""))
+            elif line.startswith("WERKNEMER"):
+                res["RN"] = int(line[11:32].replace(" ",""))
+
             elif line.startswith("Date de début de l'occupation"):
                 date = line[31:48].replace(" ","")
+                validate_date(date)
+                res["date_in"] = date
+            elif line.startswith("Begindatum tewerkstelling"):
+                date = line[27:45].replace(" ","")
                 validate_date(date)
                 res["date_in"] = date
 
             elif line.startswith("Date de fin de l'occupation"):
                 date = line[29:46].replace(" ","")
+                validate_date(date)
+                res["date_out"] = date
+            elif line.startswith("Einddatum tewerkstelling"):
+                date = line[26:44].replace(" ","")
                 validate_date(date)
                 res["date_out"] = date
 
