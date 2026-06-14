@@ -10,9 +10,10 @@ import rpt_transfer
 
 def create_automail_button(config, service_manager, player = None):
 
-    button = QPushButton("AutoMail")
+    butname = "AutoMail"
+    button = QPushButton(butname)
     
-    service_name = "RAPTOR EMAIL SERVICE"
+    service_name = f"RAPTOR EMAIL SERVICE: {butname}"
     def on_click():
         button.setEnabled(False)
 
@@ -39,7 +40,7 @@ def create_annotate_button(config, service_manager, butname, player = None):
 
     button = QPushButton(butname)
     
-    service_name = "RAPTOR DOCUMENT ANNOTATION"
+    service_name = f"RAPTOR DOCUMENT ANNOTATION: {butname}"
     def on_click():
         button.setEnabled(False)
 
@@ -64,7 +65,7 @@ def create_transfer_button(config, service_manager, butname, player = None):
 
     button = QPushButton(butname)
     
-    service_name = "RAPTOR DOCUMENT TRANSFERT"
+    service_name = f"RAPTOR DOCUMENT TRANSFERT: {butname}"
     def on_click():
         button.setEnabled(False)
 
