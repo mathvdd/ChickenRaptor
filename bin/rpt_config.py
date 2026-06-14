@@ -79,7 +79,7 @@ class RptConfig():
 
     def make_config(self):
         self.config = {
-            "General" : {
+            "general_annotate" : { ##annotate general
                 "date" : ConfigElement("", str, display="date"),
                 "signature_size" : ConfigElement([80,80], list), #better compatibility with json
                 "paraphe_size" : ConfigElement([40,40], list),
@@ -103,6 +103,7 @@ class RptConfig():
                 "dest_JBE" : ConfigElement("", str),
                 "open_explorer" : ConfigElement(True, bool),
             },
+
             "AnnotateC4" : {
                 "x_positions" : ConfigElement([], list), #[[page_nb, x, y],]
                 "date_positions" : ConfigElement([], list),
@@ -110,34 +111,52 @@ class RptConfig():
                 "cachet_positions" : ConfigElement([], list),
                 "append_to_name" : ConfigElement("_signe", str),
             },
+
             "specific_C4Bis" : {
                 "input_folder" : ConfigElement("", str),
                 "output_folder" : ConfigElement("", str),
                 "cachet_path" : ConfigElement("", str),
                 "delete_original" : ConfigElement(False, bool),
             },
+
             "specific_C4Mis" : {
                 "input_folder" : ConfigElement("", str),
                 "output_folder" : ConfigElement("", str),
                 "cachet_path" : ConfigElement("", str),
                 "delete_original" : ConfigElement(False, bool),
             },
-            "AutoMail" : {
-                "to_send_folder_path" : ConfigElement("", str),
-                "xlsx_path" : ConfigElement("", str),
-                "delete_after_sent" : ConfigElement(False, bool),
+
+            "mail_server" : {
                 "sender_email" : ConfigElement("", str),
                 "sender_pwd" : ConfigElement("", str),
                 "smtp_server" : ConfigElement("smtp.gmail.com", str),
                 "smtp_port" : ConfigElement(465, int),
                 "enable_starttls": ConfigElement(False, bool),
-                "mail_subject" : ConfigElement("", str),
-                "mail_body" : ConfigElement("", str),
+            },
+
+            "xlsx_file" : {
+                "xlsx_path" : ConfigElement("", str),
                 "colonne_nom" : ConfigElement("Nom", str),
                 "colonne_prenom" : ConfigElement("Prenom", str),
-                "colonne_mail" : ConfigElement("Email", str),
-                "colonne_registre_national" : ConfigElement("RegistreNational", str)
-            },            
+                "colonne_mail" : ConfigElement("EMail", str),
+                "colonne_registre_national" : ConfigElement("RegistreNational", str),
+                "colonne_date_in" : ConfigElement("DateIn", str),
+                "colonne_barcode" : ConfigElement("barcode", str)
+            },
+
+            "send_email_C4" : {
+                "to_send_folder_path" : ConfigElement("", str),
+                "delete_after_sent" : ConfigElement(False, bool),
+                "mail_subject" : ConfigElement("Available fields: date_in: {date_in}, date_out: {date_out}", str),
+                "mail_body" : ConfigElement("Available fields: prenom: {prenom}", str)
+            },
+    
+            "send_email_contract" : {
+                "to_send_folder_path" : ConfigElement("", str),
+                "delete_after_sent" : ConfigElement(False, bool),
+                "mail_subject" : ConfigElement("Available fields: date_in_xlsx: {date_in_xlsx}", str),
+                "mail_body" : ConfigElement("Available fields: prenom: {prenom}, date_in_xlsx: {date_in_xlsx}", str)
+            },
         }
 
 
@@ -149,7 +168,7 @@ class RptConfig():
         for section, fields in configdict.items():
             for key, value in fields.items():
                 if key == "date":
-                    self.config["General"]["date"].set_value(datetime.strftime(datetime.now(),"%d/%m/%Y"))
+                    self.config["general_annotate"]["date"].set_value(datetime.strftime(datetime.now(),"%d/%m/%Y"))
                 else:
                     self.config[section][key].set_value(value)
 

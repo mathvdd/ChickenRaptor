@@ -77,7 +77,7 @@ class MainWindow(QWidget):
         layout.addWidget(app_widgets.create_header_label("Contrats"),0,0)
         layout.addWidget(
             app_widgets.create_annotate_button(
-                self.config_handler.config.get("AnnotateContrat2Pages") | self.config_handler.config.get("General"),
+                self.config_handler.config.get("AnnotateContrat2Pages") | self.config_handler.config.get("general_annotate"),
                 self.service_manager,
                 'AnnotateContrat2Pages',
                 self.player
@@ -91,26 +91,26 @@ class MainWindow(QWidget):
                 ), 2,0)
         
         #to do send contract emails
-        # layout.addWidget(QPushButton("Mail contracts"), 3,0)
+        layout.addWidget(QPushButton("Mail contracts"), 3,0)
 
         layout.addWidget(app_widgets.create_header_label("C4"),4,0)
         layout.addWidget(
             app_widgets.create_annotate_button(
-                self.config_handler.config.get("specific_C4Bis") | self.config_handler.config.get("AnnotateC4") | self.config_handler.config.get("General"),
+                self.config_handler.config.get("specific_C4Bis") | self.config_handler.config.get("AnnotateC4") | self.config_handler.config.get("general_annotate"),
                 self.service_manager,
                 'AnnotateC4Bis',
                 self.player
                 ), 5,0)
         layout.addWidget(
             app_widgets.create_annotate_button(
-                self.config_handler.config.get("specific_C4Mis") | self.config_handler.config.get("AnnotateC4") | self.config_handler.config.get("General"),
+                self.config_handler.config.get("specific_C4Mis") | self.config_handler.config.get("AnnotateC4") | self.config_handler.config.get("general_annotate"),
                 self.service_manager,
                 'AnnotateC4Mis',
                 self.player
                 ), 6,0)
         layout.addWidget(
             app_widgets.create_automail_button(
-                self.config_handler.config.get("AutoMail"),
+                self.config_handler.config.get("mail_server") | self.config_handler.config.get("send_email_C4") | self.config_handler.config.get("xlsx_file"),
                 self.service_manager,
                 self.player
                 )
