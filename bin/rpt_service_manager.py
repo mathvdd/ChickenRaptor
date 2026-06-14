@@ -32,7 +32,7 @@ class ServiceWorker(QObject):
             self.finished.emit(name)
 
         except Exception as e:
-            logging.exception(f"Service {name} failed\n", exc_info=True)
+            logging.exception(f"Service {name} failed\n", exc_info=True, stack_info=True)
             self.failed.emit(name)
 
 

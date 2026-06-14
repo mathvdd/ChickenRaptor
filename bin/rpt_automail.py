@@ -78,9 +78,9 @@ class NRExtractor:
 
 class xlsxData:
 
-    def __init__(self, xlsx_path : str, RN_column_name : str):
+    def __init__(self, xlsx_path : str, column_names : dict):
         self.xlsx_path = xlsx_path
-        self.RN_column_name = RN_column_name
+        self.column_names = column_names
         self.tab = None 
 
         self.import_xlsx(self.xlsx_path)
@@ -89,13 +89,20 @@ class xlsxData:
         self.tab = pd.read_excel(path)
             
     def return_from_RN(self, RN : int) -> dict:
-        res = self.tab.loc[self.tab[self.RN_column_name] == RN]
+        res = self.tab.loc[self.tab[self.column_names["colonne_registre_national"]] == RN]
 
         
         if len(res) != 1:
-            raise ValueError(
-                f"Expected exactly one entry for {RN}, found {len(res)}"
-            )
+            nunique_cols = [
+                self.column_names["colonne_registre_national"],
+                self.column_names["colonne_mail"], 
+                self.column_names["colonne_nom"], 
+                self.column_names["colonne_prenom"]
+                ]
+            if (len(res[nunique_cols].drop_duplicates()) != 1):
+                raise ValueError(
+                    f"Duplicates in the table do not match:\n{res}"
+                )
             
         return res.iloc[0].to_dict()
 
@@ -103,7 +110,10 @@ class xlsxData:
 
 
 def send_all_emails(config : dict):
-    xlsx_data = xlsxData(config["xlsx_path"].get_value(), config["colonne_registre_national"].get_value())
+    xlsx_data = xlsxData(
+        config["xlsx_path"].get_value(),
+        {k: v.get_value() for k, v in config.items() if k in ["colonne_registre_national", "colonne_mail", "colonne_nom", "colonne_prenom"]}
+        )
     
     files = []
     for f in os.listdir(config["to_send_folder_path"].get_value()):
