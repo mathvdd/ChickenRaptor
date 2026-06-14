@@ -153,7 +153,7 @@ class MainWindow(QWidget):
             form_layout.addRow(app_widgets.create_header_label(section))
             for key, element in fields.items():
                 if element.get_value_type() is bool:
-                    edit = QComboBox()
+                    edit = app_widgets.NoScrollQComboBox()
                     edit.addItems(["True", "False"])
                     if element.get_value():
                         edit.setCurrentText("True")

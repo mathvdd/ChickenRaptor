@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import (
     QPushButton,
     QLabel,
+    QComboBox
 )
 from PyQt6.QtGui import QPainter, QPixmap, QTextCursor
 import logging
@@ -8,6 +9,10 @@ import rpt_automail
 import rpt_pdf_ann
 import rpt_transfer
 
+
+class NoScrollQComboBox(QComboBox):
+    def wheelEvent(self, event):
+        event.ignore()
 
 def create_log_button(logger_widget, service_manager, player = None):
     butname = "Copy log"
