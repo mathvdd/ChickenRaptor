@@ -1,8 +1,15 @@
 import os
 import shutil
 import logging
+from rpt_config import validate_path
 
 def transfertC4(config):
+    validate_path(config["source_path"].get_value(), "source_path")
+    validate_path(config["to_clean"].get_value(), "to_clean")
+    validate_path(config["dest"].get_value(), "dest")
+    validate_path(config["dest_JBE"].get_value(), "dest_JBE")
+
+
     source_path = config["source_path"].get_value()
     to_clean_path = config["to_clean"].get_value()
     dest_path = config["dest"].get_value()

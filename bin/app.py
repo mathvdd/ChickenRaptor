@@ -91,7 +91,13 @@ class MainWindow(QWidget):
                 ), 2,0)
         
         #to do send contract emails
-        layout.addWidget(QPushButton("Mail contracts"), 3,0)
+        layout.addWidget(
+            app_widgets.create_contract_mail_button(
+                self.config_handler.config.get("mail_server") | self.config_handler.config.get("send_email_contract") | self.config_handler.config.get("xlsx_file"),
+                self.service_manager,
+                self.player
+                )
+                , 3, 0)
 
         layout.addWidget(app_widgets.create_header_label("C4"),4,0)
         layout.addWidget(
@@ -109,7 +115,7 @@ class MainWindow(QWidget):
                 self.player
                 ), 6,0)
         layout.addWidget(
-            app_widgets.create_automail_button(
+            app_widgets.create_C4_mail_button(
                 self.config_handler.config.get("mail_server") | self.config_handler.config.get("send_email_C4") | self.config_handler.config.get("xlsx_file"),
                 self.service_manager,
                 self.player

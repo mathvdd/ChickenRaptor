@@ -45,9 +45,9 @@ def create_log_button(logger_widget, service_manager, player = None):
     button.clicked.connect(on_click)
     return button
 
-def create_automail_button(config, service_manager, player = None):
+def create_C4_mail_button(config, service_manager, player = None):
 
-    butname = "AutoMail"
+    butname = "C4 AutoMail"
     button = QPushButton(butname)
     
     service_name = f"RAPTOR EMAIL SERVICE: {butname}"
@@ -55,7 +55,34 @@ def create_automail_button(config, service_manager, player = None):
         button.setEnabled(False)
 
         try:
-            service_manager.submit(lambda: rpt_automail.send_all_emails(config), service_name)
+            service_manager.submit(lambda: rpt_automail.send_C4_emails(config), service_name)
+        except Exception as e:
+            logging.critical(f"Failed to launch {service_name}", exc_info=True)
+
+    def on_finished(name):
+        if name == service_name:
+            button.setEnabled(True)
+            if player:
+                player.randomly_play_random()
+
+
+    service_manager.worker.finished.connect(on_finished)
+    service_manager.worker.failed.connect(on_finished)
+    
+    button.clicked.connect(on_click)
+    return button
+
+def create_contract_mail_button(config, service_manager, player = None):
+
+    butname = "Contracts AutoMail"
+    button = QPushButton(butname)
+    
+    service_name = f"RAPTOR EMAIL SERVICE: {butname}"
+    def on_click():
+        button.setEnabled(False)
+
+        try:
+            service_manager.submit(lambda: rpt_automail.send_contract_emails(config), service_name)
         except Exception as e:
             logging.critical(f"Failed to launch {service_name}", exc_info=True)
 
