@@ -161,7 +161,7 @@ def send_contract_emails(config: dict):
         msg["from"] = config["sender_email"].get_value()
         msg["subject"] = replace_in_text(
             config["mail_subject"].get_value(),
-            {"date_in_xlsx":pdict[config['colonne_date_in'].get_value()]},
+            {"date_in_xlsx":pdict[config['colonne_date_in'].get_value()], "barcode":pdict[config['colonne_barcode'].get_value()]},
             "mail_subject")
         msg.set_content(
             replace_in_text(
