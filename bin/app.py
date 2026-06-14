@@ -82,22 +82,22 @@ class MainWindow(QWidget):
                 'AnnotateContrat2Pages',
                 self.player
                 ), 1,0)
-        layout.addWidget(
-            app_widgets.create_transfer_button(
-                self.config_handler.config.get("TransfertContrat"),
-                self.service_manager,
-                'TransfertContrat',
-                self.player
-                ), 2,0)
-        
-        #to do send contract emails
+
         layout.addWidget(
             app_widgets.create_contract_mail_button(
                 self.config_handler.config.get("mail_server") | self.config_handler.config.get("send_email_contract") | self.config_handler.config.get("xlsx_file"),
                 self.service_manager,
                 self.player
                 )
-                , 3, 0)
+                , 2, 0)
+        layout.addWidget(
+            app_widgets.create_transfer_button(
+                self.config_handler.config.get("TransfertContrat"),
+                self.service_manager,
+                'TransfertContrat',
+                self.player
+                ), 3,0)
+    
 
         layout.addWidget(app_widgets.create_header_label("C4"),4,0)
         layout.addWidget(
