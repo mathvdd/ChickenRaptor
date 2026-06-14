@@ -10,6 +10,26 @@ def validate_date(date : str):
     except ValueError as e:
         logging.critical(f"Invalid date : {date}", exc_info=True)
 
+def validate_path(path: str, param_name: str = None):
+    
+    if not os.path.isdir(path):
+        msg = f"Could not locate the path: {path}" if param_name is None else f"Could not locate '{param_name}': {path}"
+        raise ValueError(msg)
+    
+    if len(path) == 0:
+        msg = f"Path empty" if param_name is None else f"Empty path '{param_name}': {path}"
+        raise ValueError(msg)
+    
+def validate_file_path(path: str, param_name: str = None):
+    
+    if not os.path.isfile(path):
+        msg = f"Could not locate the file: {path}" if param_name is None else f"Could not locate '{param_name}': {path}"
+        raise ValueError(msg)
+    
+    if len(path) == 0:
+        msg = f"Path empty" if param_name is None else f"Empty path '{param_name}': {path}"
+        raise ValueError(msg)
+
 class ConfigElement():
     def __init__(self, value, value_type, display="", widget=None):
         self.value = value
@@ -141,7 +161,7 @@ class RptConfig():
                 "colonne_mail" : ConfigElement("EMail", str),
                 "colonne_registre_national" : ConfigElement("RegistreNational", str),
                 "colonne_date_in" : ConfigElement("DateIn", str),
-                "colonne_barcode" : ConfigElement("barcode", str)
+                "colonne_barcode" : ConfigElement("Barcode", str)
             },
 
             "send_email_C4" : {

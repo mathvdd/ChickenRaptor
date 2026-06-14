@@ -5,7 +5,8 @@ import pandas as pd
 from email.message import EmailMessage
 import smtplib
 from datetime import datetime
-from rpt_config import validate_date
+from rpt_config import validate_date, validate_path, validate_file_path
+
 
 class NRExtractor:
 
@@ -87,6 +88,17 @@ class xlsxData:
 
     def import_xlsx(self, path : str):
         self.tab = pd.read_excel(path)
+        self.tab["DateIn"] = pd.to_datetime(self.tab["DateIn"]).dt.strftime("%d/%m/%Y")
+
+    def return_from_barcode(self, barcode : str) -> dict:
+        res = self.tab.loc[self.tab[self.column_names["colonne_barcode"]] == barcode]
+        
+        if len(res) != 1:
+            raise ValueError(
+                f"Expected exactly one occurence for the contract {barcode}, found {len(res)}:\n{res}"
+            )
+            
+        return res.iloc[0].to_dict()
             
     def return_from_RN(self, RN : int) -> dict:
         res = self.tab.loc[self.tab[self.column_names["colonne_registre_national"]] == RN]
@@ -107,28 +119,94 @@ class xlsxData:
         return res.iloc[0].to_dict()
 
 
+def replace_in_text(to_parse : str, replace : dict, log_name : str):
+    # check if parse words are known or throw an error
+    for key, value in replace.items():
+        print(key, value, type(value))
+        if "{" + key + "}" in to_parse:
+            to_parse = to_parse.replace("{" + key + "}", value)
+    if (to_parse.count("{") + to_parse.count("}")) > 0: 
+        raise Exception(f"Error reading {{}} parameters in parameter {log_name}") 
+    return to_parse
+
+def send_contract_emails(config: dict):
+    validate_file_path(config["xlsx_path"].get_value(), "xlsx_path")
+    validate_path(config["to_send_folder_path"].get_value(), "to_send_folder_path")
+
+    xlsx_data = xlsxData(
+        config["xlsx_path"].get_value(),
+        {k: v.get_value() for k, v in config.items() if k in ["colonne_barcode", "colonne_mail", "colonne_nom", "colonne_prenom"]}
+        )
+    
+    files = []
+
+    for f in os.listdir(config["to_send_folder_path"].get_value()):
+        files.append(os.path.join(config["to_send_folder_path"].get_value(), f))
+    logging.info(f"Found {len(files)} pdf")
+    
+
+    for f in files:
+        barcode = os.path.splitext(os.path.basename(f))[0]
+        pdict = xlsx_data.return_from_barcode(barcode)
+        
+        for item in [config['colonne_mail'].get_value(), config['colonne_prenom'].get_value(), config['colonne_date_in'].get_value()]:
+            if item not in pdict.keys():
+                raise ValueError(f"Parameter '{item}' not found in the .xlsx")
+
+        with open(f, "rb") as pdf_file:
+            pdf_data = pdf_file.read()
+
+        msg = EmailMessage()
+        msg["to"] = pdict[config['colonne_mail'].get_value()]
+        msg["from"] = config["sender_email"].get_value()
+        msg["subject"] = replace_in_text(
+            config["mail_subject"].get_value(),
+            {"date_in_xlsx":pdict[config['colonne_date_in'].get_value()]},
+            "mail_subject")
+        msg.set_content(
+            replace_in_text(
+            config["mail_body"].get_value(),
+            {"prenom": pdict[config['colonne_prenom'].get_value()].lower().capitalize(), "date_in_xlsx":pdict[config['colonne_date_in'].get_value()]},
+            "mail_body").replace("\\n", "\n")
+            )
+
+        msg.add_attachment(
+            pdf_data,
+            maintype="application",
+            subtype="pdf",
+            filename=os.path.basename(f)
+        )
+    
+        logging.info(f"Envoi à {pdict[config['colonne_prenom'].get_value()]} {pdict[config['colonne_nom'].get_value()]} ({pdict[config['colonne_mail'].get_value()]})")    
+        with smtplib.SMTP_SSL(config["smtp_server"].get_value(), config["smtp_port"].get_value()) as server:
+            # server.set_debuglevel(1)
+            if config["enable_starttls"].get_value():
+                server.starttls()
+            server.login(config['sender_email'].get_value(), config['sender_pwd'].get_value())
+            server.send_message(msg)
+
+        if config["delete_after_sent"].get_value():
+            # os.remove(f)
+            logging.info(f"Deleting {f}")
+            os.remove(f)
 
 
-def send_all_emails(config : dict):
+def send_C4_emails(config : dict):
+    validate_file_path(config["xlsx_path"].get_value(), "xlsx_path")
+    validate_path(config["to_send_folder_path"].get_value(), "to_send_folder_path")
+
     xlsx_data = xlsxData(
         config["xlsx_path"].get_value(),
         {k: v.get_value() for k, v in config.items() if k in ["colonne_registre_national", "colonne_mail", "colonne_nom", "colonne_prenom"]}
         )
     
     files = []
+
     for f in os.listdir(config["to_send_folder_path"].get_value()):
         if f.endswith('_signe.pdf'):
             files.append(os.path.join(config["to_send_folder_path"].get_value(), f))
     logging.info(f"Found {len(files)} pdf")
     
-    def replace_in_text(to_parse : str, replace : dict, log_name : str):
-        # check if parse words are known or throw an error
-        for key, value in replace.items():
-            if "{" + key + "}" in to_parse:
-                to_parse = to_parse.replace("{" + key + "}", value)
-        if (to_parse.count("{") + to_parse.count("}")) > 0: 
-            raise Exception(f"Error reading {{}} parameters in parameter {log_name}") 
-        return to_parse
 
     for f in files:
         with NRExtractor(f) as ext:

@@ -2,6 +2,7 @@ import logging
 import os
 import pymupdf
 from rpt_barcode import read_barcode
+from rpt_config import validate_path, validate_file_path
 
 class pdfAnnotater():
     def __init__(self, pdf_path:str):
@@ -76,6 +77,10 @@ class pdfAnnotater():
 
     
 def make_all_annotations(config: dict):
+    validate_path(config["input_folder"].get_value(), "input_folder")
+    validate_path(config["output_folder"].get_value(), "output_folder")
+
+
     folder = config["input_folder"].get_value()
     # files = [os.path.join(folder,f) for f in os.listdir(folder) if (os.path.isfile(os.path.join(folder,f)) and os.path.join(folder,f).endswith(".pdf"))]
     files = [f for f in os.listdir(folder) if (os.path.isfile(os.path.join(folder,f)) and os.path.join(folder,f).endswith(".pdf"))]
@@ -100,7 +105,8 @@ def make_all_annotations(config: dict):
         with pdfAnnotater(input_file) as ann:
             ann.resize()
             #add the signature
-            if config.get("signature_positions") is not None:
+            if config.get("signature_positions") is not None:  
+                validate_file_path(config["signature_path"].get_value(), "signature_path")              
                 ann.add_images(
                     config["signature_positions"].get_value(),
                     config["signature_path"].get_value(),
@@ -108,6 +114,7 @@ def make_all_annotations(config: dict):
                     )
             
             if config.get("paraphe_positions") is not None:
+                validate_file_path(config["paraphe_path"].get_value(), "paraphe_path")
                 ann.add_images(
                     config["paraphe_positions"].get_value(),
                     config["paraphe_path"].get_value(),
@@ -115,6 +122,7 @@ def make_all_annotations(config: dict):
                     )
 
             if config.get("cachet_positions") is not None:
+                validate_file_path(config["cachet_path"].get_value(), "cachet_path")
                 ann.add_images(
                     config["cachet_positions"].get_value(),
                     config["cachet_path"].get_value(),
