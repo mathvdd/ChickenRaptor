@@ -2,11 +2,48 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QLabel,
 )
-from PyQt6.QtGui import QPainter, QPixmap
+from PyQt6.QtGui import QPainter, QPixmap, QTextCursor
 import logging
 import rpt_automail
 import rpt_pdf_ann
 import rpt_transfer
+
+
+def create_log_button(logger_widget, service_manager, player = None):
+    butname = "Copy log"
+    button = QPushButton(butname)
+    
+    service_name = f"RAPTOR LOG SERVICE: {butname}"
+
+    def copy_log():
+        logger_widget.selectAll()
+        logger_widget.copy()
+        logging.info('Log copied to clipboard')
+
+        cursor = logger_widget.textCursor()
+        cursor.clearSelection()
+        logger_widget.setTextCursor(cursor)
+
+    def on_click():
+        button.setEnabled(False)
+
+        try:
+            service_manager.submit(lambda: copy_log(), service_name)
+        except Exception as e:
+            logging.critical(f"Failed to launch {service_name}", exc_info=True)
+
+    def on_finished(name):
+        if name == service_name:
+            button.setEnabled(True)
+            if player:
+                player.randomly_play_random()
+
+
+    service_manager.worker.finished.connect(on_finished)
+    service_manager.worker.failed.connect(on_finished)
+    
+    button.clicked.connect(on_click)
+    return button
 
 def create_automail_button(config, service_manager, player = None):
 
