@@ -8,7 +8,7 @@ def validate_date(date : str):
     try:
         datetime.strptime(date, "%d/%m/%Y")
     except ValueError as e:
-        logging.critical(f"Invalid date : {date}", exc_info=True)
+        logging.critical(f"Date invalide : {date}", exc_info=True)
 
 def validate_path(path: str, param_name: str = None):
     
@@ -30,8 +30,13 @@ def validate_file_path(path: str, param_name: str = None):
         msg = f"Path empty" if param_name is None else f"Empty path '{param_name}': {path}"
         raise ValueError(msg)
 
+translate_values = {
+    "True":"Oui",
+    "False":"Non"
+}
+
 class ConfigElement():
-    def __init__(self, value, value_type, display="", widget=None):
+    def __init__(self, value, value_type, display=None, widget=None):
         self.value = value
         self.value_type = value_type
         self.widget = widget
@@ -41,17 +46,17 @@ class ConfigElement():
         return self.value
     def set_value(self, raw):
 
-        if self.display == "date":
+        if self.display == "Date":
             validate_date(raw)
-            logging.info(f"Setting date to {raw}")
+            logging.info(f"Configuration de la date au: {raw}")
 
         try:
 
             if isinstance(raw, self.value_type):
                 value = raw
 
-            elif self.value_type is bool:
-                value = (raw == "True")
+            # elif self.value_type is bool:
+            #     value = (raw == "True")
 
             elif self.value_type is int:
                 value = int(raw)
@@ -65,7 +70,7 @@ class ConfigElement():
             self.value = value
 
         except TypeError as e:
-            logging.critical(f"Could not save {raw} of type {type(raw)}", exc_info=True)
+            logging.critical(f"Impossible d'enregistrer {raw} de type {type(raw)}", exc_info=True)
 
 
     def get_value_type(self):
@@ -76,7 +81,7 @@ class ConfigElement():
     def widget2value(self):
         # print(self.get_value(), type(self.get_value()), self.get_value_type())
         if self.get_value_type() is bool:
-            self.set_value(self.widget.currentText() == "True")
+            self.set_value(self.widget.currentText() == translate_values.get("True"))
         else:
             self.set_value(self.widget.text())
 
@@ -91,7 +96,7 @@ class RptConfig():
 
         self.make_config()
         if not os.path.isfile(self.config_path):
-            logging.info("No config.json found, creating one")
+            logging.info("Pas de fichier config.json trouvé, initiation du fichier")
             self.export_config()
         else:
             self.import_config()
@@ -100,88 +105,88 @@ class RptConfig():
     def make_config(self):
         self.config = {
             "general_annotate" : { ##annotate general
-                "date" : ConfigElement("", str, display="date"),
-                "signature_size" : ConfigElement([80,80], list), #better compatibility with json
-                "paraphe_size" : ConfigElement([40,40], list),
-                "cachet_size" : ConfigElement([150,75], list),
-                "signature_path" : ConfigElement("", str),
-                "paraphe_path" : ConfigElement("", str),
+                "date" : ConfigElement("", str, display="Date"),
+                "signature_size" : ConfigElement([80,80], list, display="Taille Signature"), #better compatibility with json
+                "paraphe_size" : ConfigElement([40,40], list, display="Taille Paraphe"),
+                "cachet_size" : ConfigElement([150,75], list, display="Taille Cachet"),
+                "signature_path" : ConfigElement("", str, display="Chemin Signature"),
+                "paraphe_path" : ConfigElement("", str, display="Chemin Paraphe"),
             },
             "AnnotateContrat2Pages" : {
-                "input_folder" : ConfigElement("", str),
-                "output_folder" : ConfigElement("", str),
-                "signature_positions" : ConfigElement([], list),
-                "paraphe_positions" : ConfigElement([], list),
-                "rename_to_barcode": ConfigElement(True, bool),
-                "delete_original" : ConfigElement(False, bool),
-                "open_explorer" : ConfigElement(True, bool),
+                "input_folder" : ConfigElement("", str, display="Dossier à traiter"),
+                "output_folder" : ConfigElement("", str, display="Dossier de destination"),
+                "signature_positions" : ConfigElement([], list, display="Positions Signature"),
+                "paraphe_positions" : ConfigElement([], list, display="Positions Paraphe"),
+                "rename_to_barcode": ConfigElement(True, bool, display="Renommer par barcode"),
+                "delete_original" : ConfigElement(False, bool, display="Supprimer original"),
+                "open_explorer" : ConfigElement(True, bool, display="Ouvrir Explorer"),
             },
             "TransfertContrat" : {
-                "source_path" : ConfigElement("", str),
-                "to_clean" : ConfigElement("", str),
-                "dest" : ConfigElement("", str),
-                "dest_JBE" : ConfigElement("", str),
-                "open_explorer" : ConfigElement(True, bool),
+                "source_path" : ConfigElement("", str, display="Dossier à traiter"),
+                "to_clean" : ConfigElement("", str, display=None),
+                "dest" : ConfigElement("", str, display="Dossier de destination"),
+                "dest_JBE" : ConfigElement("", str, display="Dossier de destination JBE"),
+                "open_explorer" : ConfigElement(True, bool, display="Ouvrir Explorer"),
             },
 
             "AnnotateC4" : {
-                "x_positions" : ConfigElement([], list), #[[page_nb, x, y],]
-                "date_positions" : ConfigElement([], list),
-                "signature_positions" : ConfigElement([], list),
-                "cachet_positions" : ConfigElement([], list),
-                "append_to_name" : ConfigElement("_signe", str),
+                "x_positions" : ConfigElement([], list, display="Positions X"), #[[page_nb, x, y],]
+                "date_positions" : ConfigElement([], list, display="Position date"),
+                "signature_positions" : ConfigElement([], list, display="Positions Signature"),
+                "cachet_positions" : ConfigElement([], list, display="Positions Cachet"),
+                "append_to_name" : ConfigElement("_signe", str, display="Suffixe renommage"),
             },
 
             "specific_C4Bis" : {
-                "input_folder" : ConfigElement("", str),
-                "output_folder" : ConfigElement("", str),
-                "cachet_path" : ConfigElement("", str),
-                "delete_original" : ConfigElement(False, bool),
+                "input_folder" : ConfigElement("", str, display="Dossier à traiter"),
+                "output_folder" : ConfigElement("", str, display="Dossier de destination"),
+                "cachet_path" : ConfigElement("", str, display="Chemin Cachet"),
+                "delete_original" : ConfigElement(False, bool, display="Supprimer après traitement"),
             },
 
             "specific_C4Mis" : {
-                "input_folder" : ConfigElement("", str),
-                "output_folder" : ConfigElement("", str),
-                "cachet_path" : ConfigElement("", str),
-                "delete_original" : ConfigElement(False, bool),
+                "input_folder" : ConfigElement("", str, display="Dossier à traiter"),
+                "output_folder" : ConfigElement("", str, display="Dossier de destination"),
+                "cachet_path" : ConfigElement("", str, display="Chemin Cachet"),
+                "delete_original" : ConfigElement(False, bool, display="Supprimer après traitement"),
             },
 
             "mail_server" : {
-                "sender_email" : ConfigElement("", str),
-                "sender_pwd" : ConfigElement("", str),
-                "smtp_server" : ConfigElement("smtp.gmail.com", str),
-                "smtp_port" : ConfigElement(465, int),
-                "enable_starttls": ConfigElement(False, bool),
+                "sender_email" : ConfigElement("", str, display="Adresse e-mail"),
+                "sender_pwd" : ConfigElement("", str, display="Mot de passe"),
+                "smtp_server" : ConfigElement("smtp.gmail.com", str, display="Serveur SMTP"),
+                "smtp_port" : ConfigElement(465, int, display="Port SMTP"),
+                "enable_starttls": ConfigElement(False, bool, display="Activer STARTTLS"),
             },
 
             "xlsx_file" : {
-                "xlsx_path" : ConfigElement("", str),
-                "colonne_nom" : ConfigElement("Nom", str),
-                "colonne_prenom" : ConfigElement("Prenom", str),
-                "colonne_mail" : ConfigElement("EMail", str),
-                "colonne_registre_national" : ConfigElement("RegistreNational", str),
-                "colonne_date_in" : ConfigElement("DateIn", str),
-                "colonne_barcode" : ConfigElement("Barcode", str)
+                "xlsx_path" : ConfigElement("", str, display="Chemin fichier Excel"),
+                "colonne_nom" : ConfigElement("Nom", str, display='Colonne "Nom"'),
+                "colonne_prenom" : ConfigElement("Prenom", str, display='Colonne "Prénom"'),
+                "colonne_mail" : ConfigElement("EMail", str, display='Colonne "e-mail"'),
+                "colonne_registre_national" : ConfigElement("RegistreNational", str, display='Colonne "Registre National"'),
+                "colonne_date_in" : ConfigElement("DateIn", str, display='Colonne "date in"'),
+                "colonne_barcode" : ConfigElement("Barcode", str, display='Colonne "barcode"')
             },
 
             "send_email_C4" : {
-                "to_send_folder_path" : ConfigElement("", str),
-                "delete_after_sent" : ConfigElement(False, bool),
-                "mail_subject" : ConfigElement("Available fields: date_in: {date_in}, date_out: {date_out}", str),
-                "mail_body" : ConfigElement("Available fields: prenom: {prenom}", str)
+                "to_send_folder_path" : ConfigElement("", str, display="Dossier à traiter"),
+                "delete_after_sent" : ConfigElement(False, bool, display="Supprimer après envoi"),
+                "mail_subject" : ConfigElement("Available fields: date_in: {date_in}, date_out: {date_out}", str, display="Sujet"),
+                "mail_body" : ConfigElement("Available fields: prenom: {prenom}", str, display="Corps de texte")
             },
     
             "send_email_contract" : {
-                "to_send_folder_path" : ConfigElement("", str),
-                "delete_after_sent" : ConfigElement(False, bool),
-                "mail_subject" : ConfigElement("Available fields: date_in_xlsx: {date_in_xlsx}", str),
-                "mail_body" : ConfigElement("Available fields: prenom: {prenom}, date_in_xlsx: {date_in_xlsx}", str)
+                "to_send_folder_path" : ConfigElement("", str, display="Dossier à traiter"),
+                "delete_after_sent" : ConfigElement(False, bool, display="Supprimer après envoi"),
+                "mail_subject" : ConfigElement("Available fields: date_in_xlsx: {date_in_xlsx}", str, display="Sujet"),
+                "mail_body" : ConfigElement("Available fields: prenom: {prenom}, date_in_xlsx: {date_in_xlsx}", str, display="Corps de texte")
             },
         }
 
 
     def import_config(self):
-        logging.info("Importing config.json")        
+        logging.info("Importe config.json")        
         with open(self.config_path, 'r') as fp:
             configdict = json.load(fp)
 
@@ -193,7 +198,7 @@ class RptConfig():
                     self.config[section][key].set_value(value)
 
     def export_config(self):
-        logging.info("Exporting config.json")
+        logging.info("Exporte config.json")
 
         configdict = {}
 
@@ -209,11 +214,3 @@ class RptConfig():
         for section, fields in self.config.items():
             for key, element in fields.items():
                 element.widget2value()
-
-if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO,
-        format="[%(levelname)s] %(message)s"
-    )
-    conf = RptConfig()
-    logging.info(conf.config["General"]["paraphe_size"].get_value())

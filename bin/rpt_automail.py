@@ -142,7 +142,7 @@ def send_contract_emails(config: dict):
 
     for f in os.listdir(config["to_send_folder_path"].get_value()):
         files.append(os.path.join(config["to_send_folder_path"].get_value(), f))
-    logging.info(f"Found {len(files)} pdf")
+    logging.info(f"{len(files)} fichiers pdf trouvés")
     
 
     for f in files:
@@ -187,7 +187,7 @@ def send_contract_emails(config: dict):
 
         if config["delete_after_sent"].get_value():
             # os.remove(f)
-            logging.info(f"Deleting {f}")
+            logging.info(f"Suppression de {f}")
             os.remove(f)
 
 
@@ -205,7 +205,7 @@ def send_C4_emails(config : dict):
     for f in os.listdir(config["to_send_folder_path"].get_value()):
         if f.endswith('_signe.pdf'):
             files.append(os.path.join(config["to_send_folder_path"].get_value(), f))
-    logging.info(f"Found {len(files)} pdf")
+    logging.info(f"{len(files)} fichiers pdf trouvés")
     
 
     for f in files:
@@ -252,5 +252,5 @@ def send_C4_emails(config : dict):
 
         if config["delete_after_sent"].get_value():
             # os.remove(f)
-            logging.info(f"Deleting {f}")
+            logging.info(f"Suppression de {f}")
             os.remove(f)

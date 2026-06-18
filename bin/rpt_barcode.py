@@ -3,7 +3,7 @@ from pdf2image import convert_from_path
 from pyzbar.pyzbar import decode
 
 def read_barcode(path : str) -> str:
-    logging.info("Reading barcode")
+    logging.info("Lecture du code bar")
     # covert pdf to PIL, take the first page
     img = convert_from_path(path)[0]
     detectedBarcodes = decode(img)

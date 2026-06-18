@@ -58,7 +58,7 @@ class pdfAnnotater():
         r_w, r_h = pymupdf.paper_size(page_size)
 
         if (abs(self.r_w - r_w) > 2) or (abs(self.r_h - r_h) > 2):
-            logging.info("Resizing pdf")
+            logging.info("Redimensionnement du pdf")
             self.file_handle.bake()
             newdoc = pymupdf.open()
 
@@ -89,9 +89,12 @@ def make_all_annotations(config: dict):
     #     if f.endswith('.pdf'):
     #         files.append(f)
 
-    logging.info(f"Found {len(files)} pdf")
+    logging.info(f"{len(files)} fichiers pdf trouvés")
 
+    count = 0
     for fil in files:
+        count += 1
+
         input_file = os.path.join(config["input_folder"].get_value(), fil)
         if config.get("rename_to_barcode") and config["rename_to_barcode"].get_value():
             output_file = os.path.join(config["output_folder"].get_value(), read_barcode(input_file) + '.pdf')
@@ -100,7 +103,7 @@ def make_all_annotations(config: dict):
         else:
             output_file = os.path.join(config["output_folder"].get_value(), fil)
 
-        logging.info(f"Annotating and moving {input_file} to {output_file}")
+        logging.info(f"{count}/{len(files)} Annotatation et déplacement de {os.path.basename(input_file)} ({os.path.basename(output_file)})")
 
         with pdfAnnotater(input_file) as ann:
             ann.resize()
@@ -145,13 +148,13 @@ def make_all_annotations(config: dict):
         
 
         if config.get("delete_original").get_value() is True:
-            logging.info(f"Deleting {fil}")
+            logging.info(f"Suppression de {fil}")
             os.remove(input_file)
-    
+
          
 
     if config.get("open_explorer") and config["open_explorer"].get_value():
-        logging.info(f"Opening {config['output_folder'].get_value()} in file explorer")
+        logging.info(f"Ouverture de {config['output_folder'].get_value()} dans l'explorateur de fichier")
         if os.name == "posix":
             os.system(f"xdg-open {config['output_folder'].get_value()}")
         elif os.name == "nt":

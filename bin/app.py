@@ -154,15 +154,16 @@ class MainWindow(QWidget):
             for key, element in fields.items():
                 if element.get_value_type() is bool:
                     edit = app_widgets.NoScrollQComboBox()
-                    edit.addItems(["True", "False"])
+                    edit.addItems([rpt_config.translate_values.get("True"), rpt_config.translate_values.get("False")])
                     if element.get_value():
-                        edit.setCurrentText("True")
+                        edit.setCurrentText(rpt_config.translate_values.get("True"))
                     else:
-                        edit.setCurrentText("False")
+                        edit.setCurrentText(rpt_config.translate_values.get("False"))
                     
                 else:
                     edit = QLineEdit(str(element.get_value()))
-                form_layout.addRow(f"{key}:", edit)
+                key_display = element.display if element.display is not None else key
+                form_layout.addRow(f"{key_display}:", edit)
                 element.set_widget(edit)
 
         scroll.setWidget(form_widget)
