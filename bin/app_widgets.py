@@ -50,9 +50,9 @@ def create_log_button(logger_widget, service_manager, player = None):
     button.clicked.connect(on_click)
     return button
 
-def create_C4_mail_button(config, service_manager, player = None):
 
-    butname = "C4 AutoMail"
+def create_mail_button(config, service_manager, butname, perso_info_selector, player = None):
+    
     button = QPushButton(butname)
     
     service_name = f"RAPTOR EMAIL SERVICE: {butname}"
@@ -60,7 +60,7 @@ def create_C4_mail_button(config, service_manager, player = None):
         button.setEnabled(False)
 
         try:
-            service_manager.submit(lambda: rpt_automail.send_C4_emails(config), service_name)
+            service_manager.submit(lambda: rpt_automail.send_emails(config, perso_info_selector), service_name)
         except Exception as e:
             logging.critical(f"Échec lors de l'exécution du service: {service_name}", exc_info=True)
 
@@ -76,34 +76,6 @@ def create_C4_mail_button(config, service_manager, player = None):
     
     button.clicked.connect(on_click)
     return button
-
-def create_contract_mail_button(config, service_manager, player = None):
-
-    butname = "Contracts AutoMail"
-    button = QPushButton(butname)
-    
-    service_name = f"RAPTOR EMAIL SERVICE: {butname}"
-    def on_click():
-        button.setEnabled(False)
-
-        try:
-            service_manager.submit(lambda: rpt_automail.send_contract_emails(config), service_name)
-        except Exception as e:
-            logging.critical(f"Échec lors de l'exécution du service: {service_name}", exc_info=True)
-
-    def on_finished(name):
-        if name == service_name:
-            button.setEnabled(True)
-            if player:
-                player.randomly_play_random()
-
-
-    service_manager.worker.finished.connect(on_finished)
-    service_manager.worker.failed.connect(on_finished)
-    
-    button.clicked.connect(on_click)
-    return button
-
 
 def create_annotate_button(config, service_manager, butname, player = None):
 

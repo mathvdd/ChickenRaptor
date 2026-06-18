@@ -88,7 +88,7 @@ class xlsxData:
 
     def import_xlsx(self, path : str):
         self.tab = pd.read_excel(path)
-        self.tab["DateIn"] = pd.to_datetime(self.tab["DateIn"]).dt.strftime("%d/%m/%Y")
+        self.tab[self.column_names["colonne_date_in"]] = pd.to_datetime(self.tab[self.column_names["colonne_date_in"]]).dt.strftime("%d/%m/%Y")
 
     def return_from_barcode(self, barcode : str) -> dict:
         res = self.tab.loc[self.tab[self.column_names["colonne_barcode"]] == barcode]
@@ -122,119 +122,86 @@ class xlsxData:
 def replace_in_text(to_parse : str, replace : dict, log_name : str):
     # check if parse words are known or throw an error
     for key, value in replace.items():
-        print(key, value, type(value))
         if "{" + key + "}" in to_parse:
             to_parse = to_parse.replace("{" + key + "}", value)
     if (to_parse.count("{") + to_parse.count("}")) > 0: 
         raise Exception(f"Error reading {{}} parameters in parameter {log_name}") 
     return to_parse
 
-def send_contract_emails(config: dict):
+
+def info_from_RN(xlsx_data: xlsxData, file : str) -> dict:
+    with NRExtractor(file) as ext:
+        pdf_info = ext.extract()
+    pdict = xlsx_data.return_from_RN(pdf_info["RN"])
+    
+    for item in [xlsx_data.column_names['colonne_mail'], xlsx_data.column_names['colonne_nom'], xlsx_data.column_names['colonne_prenom']]:
+        if item not in pdict.keys():
+            raise ValueError(f"Parameter '{item}' not found in the .xlsx")
+
+    return pdict | pdf_info
+
+def info_from_barcode(xlsx_data: xlsxData, file : str) -> dict:
+    barcode = os.path.splitext(os.path.basename(file))[0]
+    pdict = xlsx_data.return_from_barcode(barcode)
+    
+    for item in [xlsx_data.column_names['colonne_mail'], xlsx_data.column_names['colonne_prenom'], xlsx_data.column_names['colonne_date_in']]:
+        if item not in pdict.keys():
+            raise ValueError(f"Parameter '{item}' not found in the .xlsx")
+
+    return pdict
+
+
+def send_emails(config: dict, perso_info_extract):
+
     validate_file_path(config["xlsx_path"].get_value(), "xlsx_path")
     validate_path(config["to_send_folder_path"].get_value(), "to_send_folder_path")
 
     xlsx_data = xlsxData(
-        config["xlsx_path"].get_value(),
-        {k: v.get_value() for k, v in config.items() if k in ["colonne_barcode", "colonne_mail", "colonne_nom", "colonne_prenom"]}
+        xlsx_path = config["xlsx_path"].get_value(),
+        column_names = {k: v.get_value() for k, v in config.items() if k.startswith("colonne_")}
         )
     
     files = []
 
-    for f in os.listdir(config["to_send_folder_path"].get_value()):
-        files.append(os.path.join(config["to_send_folder_path"].get_value(), f))
-    logging.info(f"{len(files)} fichiers pdf trouvés")
-    
-
-    for f in files:
-        barcode = os.path.splitext(os.path.basename(f))[0]
-        pdict = xlsx_data.return_from_barcode(barcode)
-        
-        for item in [config['colonne_mail'].get_value(), config['colonne_prenom'].get_value(), config['colonne_date_in'].get_value()]:
-            if item not in pdict.keys():
-                raise ValueError(f"Parameter '{item}' not found in the .xlsx")
-
-        with open(f, "rb") as pdf_file:
-            pdf_data = pdf_file.read()
-
-        msg = EmailMessage()
-        msg["to"] = pdict[config['colonne_mail'].get_value()]
-        msg["from"] = config["sender_email"].get_value()
-        msg["subject"] = replace_in_text(
-            config["mail_subject"].get_value(),
-            {"date_in_xlsx":pdict[config['colonne_date_in'].get_value()], "barcode":pdict[config['colonne_barcode'].get_value()]},
-            "mail_subject")
-        msg.set_content(
-            replace_in_text(
-            config["mail_body"].get_value(),
-            {"prenom": pdict[config['colonne_prenom'].get_value()].lower().capitalize(), "date_in_xlsx":pdict[config['colonne_date_in'].get_value()]},
-            "mail_body").replace("\\n", "\n")
-            )
-
-        msg.add_attachment(
-            pdf_data,
-            maintype="application",
-            subtype="pdf",
-            filename=os.path.basename(f)
-        )
-    
-        logging.info(f"Envoi à {pdict[config['colonne_prenom'].get_value()]} {pdict[config['colonne_nom'].get_value()]} ({pdict[config['colonne_mail'].get_value()]})")    
-        with smtplib.SMTP_SSL(config["smtp_server"].get_value(), config["smtp_port"].get_value()) as server:
-            # server.set_debuglevel(1)
-            if config["enable_starttls"].get_value():
-                server.starttls()
-            server.login(config['sender_email'].get_value(), config['sender_pwd'].get_value())
-            server.send_message(msg)
-
-        if config["delete_after_sent"].get_value():
-            # os.remove(f)
-            logging.info(f"Suppression de {f}")
-            os.remove(f)
-
-
-def send_C4_emails(config : dict):
-    validate_file_path(config["xlsx_path"].get_value(), "xlsx_path")
-    validate_path(config["to_send_folder_path"].get_value(), "to_send_folder_path")
-
-    xlsx_data = xlsxData(
-        config["xlsx_path"].get_value(),
-        {k: v.get_value() for k, v in config.items() if k in ["colonne_registre_national", "colonne_mail", "colonne_nom", "colonne_prenom"]}
-        )
-    
-    files = []
 
     for f in os.listdir(config["to_send_folder_path"].get_value()):
-        if f.endswith('_signe.pdf'):
+        if f.endswith('.pdf'):
             files.append(os.path.join(config["to_send_folder_path"].get_value(), f))
     logging.info(f"{len(files)} fichiers pdf trouvés")
     
-
+    count = 0
     for f in files:
-        with NRExtractor(f) as ext:
-            pdf_info = ext.extract()
-        pdict = xlsx_data.return_from_RN(pdf_info["RN"])
-        
-        for item in [config['colonne_mail'].get_value(), config['colonne_nom'].get_value(), config['colonne_prenom'].get_value()]:
-            if item not in pdict.keys():
-                raise ValueError(f"Parameter '{item}' not found in the .xlsx")
+        count += 1
+        pdict = perso_info_extract(xlsx_data, f)
 
-    
-        with open(f, "rb") as pdf_file:
-            pdf_data = pdf_file.read()
+        ## check this log_name thing and pdf_info not always generated
 
         msg = EmailMessage()
         msg["to"] = pdict[config['colonne_mail'].get_value()]
         msg["from"] = config["sender_email"].get_value()
         msg["subject"] = replace_in_text(
-            config["mail_subject"].get_value(),
-            {"date_in":pdf_info["date_in"], "date_out":pdf_info["date_out"]},
-            "mail_subject")
+                to_parse = config["mail_subject"].get_value(),
+                replace = {
+                    "date_in_xlsx" : pdict[config['colonne_date_in'].get_value()],
+                    "barcode" : pdict[config['colonne_barcode'].get_value()],
+                    "date_in" : pdict["date_in"] if pdict.get("date_in") else None,
+                    "date_out" : pdict["date_out"] if pdict.get("date_out") else None
+                },
+                log_name = "mail_subject")
+
         msg.set_content(
             replace_in_text(
-            config["mail_body"].get_value(),
-            {"prenom": pdict[config['colonne_prenom'].get_value()].lower().capitalize()},
-            "mail_body").replace("\\n", "\n")
-            )
+                to_parse = config["mail_body"].get_value(),
+                replace = {
+                    "prenom" : pdict[config['colonne_prenom'].get_value()].lower().capitalize(),
+                    "date_in_xlsx" : pdict[config['colonne_date_in'].get_value()]
+                },
+                log_name = "mail_body")
+            .replace("\\n", "\n")
+        )
 
+        with open(f, "rb") as pdf_file:
+            pdf_data = pdf_file.read()
         msg.add_attachment(
             pdf_data,
             maintype="application",
@@ -242,7 +209,7 @@ def send_C4_emails(config : dict):
             filename=os.path.basename(f)
         )
     
-        logging.info(f"Envoi à {pdict[config['colonne_prenom'].get_value()]} {pdict[config['colonne_nom'].get_value()]} ({pdict[config['colonne_mail'].get_value()]})")    
+        logging.info(f"{count}/{len(files)} Envoi à {pdict[config['colonne_prenom'].get_value()]} {pdict[config['colonne_nom'].get_value()]} ({pdict[config['colonne_mail'].get_value()]})")    
         with smtplib.SMTP_SSL(config["smtp_server"].get_value(), config["smtp_port"].get_value()) as server:
             # server.set_debuglevel(1)
             if config["enable_starttls"].get_value():

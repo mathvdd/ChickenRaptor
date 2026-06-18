@@ -22,6 +22,7 @@ import rpt_config
 import app_widgets
 from rpt_service_manager import ServiceManager
 import rpt_player
+from rpt_automail import info_from_RN, info_from_barcode
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -84,9 +85,11 @@ class MainWindow(QWidget):
                 ), 1,0)
 
         layout.addWidget(
-            app_widgets.create_contract_mail_button(
+            app_widgets.create_mail_button(
                 self.config_handler.config.get("mail_server") | self.config_handler.config.get("send_email_contract") | self.config_handler.config.get("xlsx_file"),
                 self.service_manager,
+                "Contracts AutoMail",
+                info_from_barcode,
                 self.player
                 )
                 , 2, 0)
@@ -115,9 +118,11 @@ class MainWindow(QWidget):
                 self.player
                 ), 6,0)
         layout.addWidget(
-            app_widgets.create_C4_mail_button(
+            app_widgets.create_mail_button(
                 self.config_handler.config.get("mail_server") | self.config_handler.config.get("send_email_C4") | self.config_handler.config.get("xlsx_file"),
                 self.service_manager,
+                "C4 AutoMail",
+                info_from_RN,
                 self.player
                 )
                 , 7, 0)

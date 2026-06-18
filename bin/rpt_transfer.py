@@ -23,22 +23,22 @@ def transfertC4(config):
 
     logging.info(f"{len(files)} fichiers trouvés, dont ({len(files_JBE)} à copier dans le répertoire JBE)")
 
-    count = 1
+    count = 0
     for file in files_JBE:
+        count += 1
         logging.info(f"{count}/{len(files_JBE)} Copie de {file} dans le répertoire JBE")
         shutil.copy(os.path.join(source_path,file), os.path.join(dest_JBE_path,file))
-        count += 1
+        
 
     to_transfert = [f for f in files if not os.path.isfile(os.path.join(dest_path,f))]
     logging.info(f"{len(to_transfert)} fichiers à déplacer dans le répertoire principal")
 
-    count = 1
+    count = 0
     for file in to_transfert:
+        count += 1
         logging.info(f"{count}/{len(to_transfert)} Déplacement de {file}")
         shutil.copy(os.path.join(source_path,file), os.path.join(dest_path,file))
         os.remove(os.path.join(source_path,file))
-        count += 1
-
 
     not_transfered = [f for f in os.listdir(source_path) if os.path.isfile(os.path.join(source_path,f))]
     if len(not_transfered) > 0:
