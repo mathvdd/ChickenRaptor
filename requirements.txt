@@ -4,6 +4,8 @@ pandas
 pdf2image
 pyzbar
 PyMuPDF
+pyodbc
 
 # install Poppler on Windows or poppler-utils on Linux (pdf2image dependency)
 # install zbar library (pyzbar dependency)
+# install mdbtools if on linux

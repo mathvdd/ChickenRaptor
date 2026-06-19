@@ -7,116 +7,7 @@ import smtplib
 from datetime import datetime
 from rpt_config import validate_date, validate_path, validate_file_path
 import shutil
-
-class NRExtractor:
-
-    def __init__(self, pdf_path:str):
-        self.pdf_path = pdf_path
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        pass
-
-    def extract(self) -> dict:
-        res = {
-            "RN":None,
-            "date_in":None,
-            "date_out":None
-            }
-
-        with open(self.pdf_path, "rb") as fp:
-            reader = pypdf.PdfReader(fp)
-            text = reader.pages[0].extract_text()
-        
-        for line in text.split("\n"):
-
-            if line.startswith("TRAVAILLEUR"):
-                res["RN"] = int(line[13:34].replace(" ",""))
-            elif line.startswith("WERKNEMER"):
-                res["RN"] = int(line[11:32].replace(" ",""))
-
-            elif line.startswith("Date de début de l'occupation"):
-                date = line[31:48].replace(" ","")
-                validate_date(date)
-                res["date_in"] = date
-            elif line.startswith("Begindatum tewerkstelling"):
-                date = line[27:45].replace(" ","")
-                validate_date(date)
-                res["date_in"] = date
-
-            elif line.startswith("Date de fin de l'occupation"):
-                date = line[29:46].replace(" ","")
-                validate_date(date)
-                res["date_out"] = date
-            elif line.startswith("Einddatum tewerkstelling"):
-                date = line[26:44].replace(" ","")
-                validate_date(date)
-                res["date_out"] = date
-
-            if not (None in res.values()):
-                return res
-
-        raise ValueError(f"Could not extract info from {self.pdf_path}: {res}")
-
-    def extract_NR_pypdf(self) -> int:
-        reader = pypdf.PdfReader(self.pdf_path)
-        text = reader.pages[0].extract_text()
-
-        found = False
-        
-        for line in text.split("\n"):
-            if line.startswith("TRAVAILLEUR"):
-                found = True
-                break
-
-        if not found:
-            raise Exception("No NISS found in pdf {self.pdf_path}")
-
-        return int(line[13:34].replace(" ",""))
-
-
-class xlsxData:
-
-    def __init__(self, xlsx_path : str, column_names : dict):
-        self.xlsx_path = xlsx_path
-        self.column_names = column_names
-        self.tab = None 
-
-        self.import_xlsx(self.xlsx_path)
-
-    def import_xlsx(self, path : str):
-        self.tab = pd.read_excel(path)
-        self.tab[self.column_names["colonne_date_in"]] = pd.to_datetime(self.tab[self.column_names["colonne_date_in"]]).dt.strftime("%d/%m/%Y")
-
-    def return_from_barcode(self, barcode : str) -> dict:
-        res = self.tab.loc[self.tab[self.column_names["colonne_barcode"]] == barcode]
-        
-        if len(res) != 1:
-            raise ValueError(
-                f"Expected exactly one occurence for the contract {barcode}, found {len(res)}:\n{res}"
-            )
-            
-        return res.iloc[0].to_dict()
-            
-    def return_from_RN(self, RN : int) -> dict:
-        res = self.tab.loc[self.tab[self.column_names["colonne_registre_national"]] == RN]
-
-        
-        if len(res) != 1:
-            nunique_cols = [
-                self.column_names["colonne_registre_national"],
-                self.column_names["colonne_mail"], 
-                self.column_names["colonne_nom"], 
-                self.column_names["colonne_prenom"]
-                ]
-            if (len(res[nunique_cols].drop_duplicates()) != 1):
-                raise ValueError(
-                    f"Duplicates in the table do not match:\n{res}"
-                )
-            
-        return res.iloc[0].to_dict()
+import rpt_db_connect
 
 
 def replace_in_text(to_parse : str, replace : dict, log_name : str):
@@ -129,40 +20,28 @@ def replace_in_text(to_parse : str, replace : dict, log_name : str):
     return to_parse
 
 
-def info_from_RN(xlsx_data: xlsxData, file : str) -> dict:
-    with NRExtractor(file) as ext:
-        pdf_info = ext.extract()
-    pdict = xlsx_data.return_from_RN(pdf_info["RN"])
-    
-    for item in [xlsx_data.column_names['colonne_mail'], xlsx_data.column_names['colonne_nom'], xlsx_data.column_names['colonne_prenom']]:
-        if item not in pdict.keys():
-            raise ValueError(f"Parameter '{item}' not found in the .xlsx")
-
-    return pdict | pdf_info
-
-def info_from_barcode(xlsx_data: xlsxData, file : str) -> dict:
-    barcode = os.path.splitext(os.path.basename(file))[0]
-    pdict = xlsx_data.return_from_barcode(barcode)
-    
-    for item in [xlsx_data.column_names['colonne_mail'], xlsx_data.column_names['colonne_prenom'], xlsx_data.column_names['colonne_date_in']]:
-        if item not in pdict.keys():
-            raise ValueError(f"Parameter '{item}' not found in the .xlsx")
-
-    return pdict
-
-
 def send_emails(config: dict, perso_info_extract):
 
-    validate_file_path(config["xlsx_path"].get_value(), "xlsx_path")
+    if config["accdb_over_xlsx"].get_value():
+        logging.info(f"Using {config["accdb_path"].get_value()} file as database")
+        db_path = validate_file_path(config["accdb_path"].get_value(), "accdb_path")
+        import_method = rpt_db_connect.access2pd
+    else:
+        logging.info(f"Using {config["xlsx_path"].get_value()} file as database")
+        db_path = validate_file_path(config["xlsx_path"].get_value(), "xlsx_path")
+        import_method = rpt_db_connect.xlsx2pd
+    
     validate_path(config["to_send_folder_path"].get_value(), "to_send_folder_path")
     copy_after_send_path = validate_path(config["copy_after_send_path"].get_value(), "copy_after_send_path", none_allowed=True)
+    
     if copy_after_send_path is None:
         logging.info("copy_after_send_path not defined, will not copy")
 
-    xlsx_data = xlsxData(
-        xlsx_path = config["xlsx_path"].get_value(),
-        column_names = {k: v.get_value() for k, v in config.items() if k.startswith("colonne_")}
-        )
+    db_data = rpt_db_connect.DbData(
+        db_path = db_path,
+        column_names = {k: v.get_value() for k, v in config.items() if k.startswith("colonne_")},
+        import_method = import_method
+    )
     
     files = []
 
@@ -178,7 +57,7 @@ def send_emails(config: dict, perso_info_extract):
         count += 1
         try:
 
-            pdict = perso_info_extract(xlsx_data, f)
+            pdict = perso_info_extract(db_data, f)
 
             ## check this log_name thing and pdf_info not always generated
 

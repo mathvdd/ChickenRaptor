@@ -18,11 +18,13 @@ def validate_path(path: str, param_name: str = None, none_allowed = False):
     else:
         if not os.path.isdir(path):
             msg = f"Could not locate the path: {path}" if param_name is None else f"Could not locate '{param_name}': {path}"
-            raise ValueError(msg)
+            logging.error(msg)
+            raise ValueError
         
         if len(path) == 0:
             msg = f"Path empty" if param_name is None else f"Empty path '{param_name}': {path}"
-            raise ValueError(msg)
+            logging.error(msg)
+            raise ValueError
 
         return path
     
@@ -30,17 +32,19 @@ def validate_file_path(path: str, param_name: str = None):
     
     if not os.path.isfile(path):
         msg = f"Could not locate the file: {path}" if param_name is None else f"Could not locate '{param_name}': {path}"
-        raise ValueError(msg)
+        logging.error(msg)
+        raise ValueError
     
     if len(path) == 0:
         msg = f"Path empty" if param_name is None else f"Empty path '{param_name}': {path}"
-        raise ValueError(msg)
+        logging.error(msg)
+        raise ValueError
 
     return path
 
 translate_values = {
-    "True":"Oui",
-    "False":"Non"
+    "True":"Yes",
+    "False":"No"
 }
 
 class ConfigElement():
@@ -78,8 +82,8 @@ class ConfigElement():
             self.value = value
 
         except TypeError as e:
-            logging.critical(f"Impossible to save {raw} of type {type(raw)}", exc_info=True)
-
+            logging.error(f"Impossible to save {raw} of type {type(raw)}", exc_info=True)
+            raise TypeError(e)
 
     def get_value_type(self):
         return self.value_type
@@ -167,7 +171,9 @@ class RptConfig():
                 "enable_starttls": ConfigElement(False, bool, display="Activer STARTTLS"),
             },
 
-            "xlsx_file" : {
+            "database" : {
+                "accdb_over_xlsx" : ConfigElement(False, bool, display=None),
+                "accdb_path" : ConfigElement("", str, display=None), 
                 "xlsx_path" : ConfigElement("", str, display="Chemin fichier Excel"),
                 "colonne_nom" : ConfigElement("Nom", str, display='Colonne "Nom"'),
                 "colonne_prenom" : ConfigElement("Prenom", str, display='Colonne "Prénom"'),

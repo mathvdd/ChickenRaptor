@@ -1,0 +1,187 @@
+import os
+from rpt_config import validate_file_path
+import pandas as pd
+import subprocess
+from io import StringIO
+
+
+def access2pd(db_path, column_names, table_name="T_Contrats"):
+
+    if os.name == "posix":
+        raw = subprocess.check_output(
+            ["mdb-export", db_path, table_name]
+        )
+
+        text = raw.decode("utf-8", errors="replace")  #OLE columns are not decoded properly
+        df = pd.read_csv(StringIO(text))
+
+        df = df[[
+            "Nom",
+            "Prenom",
+            "RegistreNational",
+            "EMail",
+            "DateIn",
+            "Id",
+            "Division"
+            ]]
+    elif os.name == "nt":
+        import pyodbc
+
+        conn = pyodbc.connect(
+            r"DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};"
+            rf"DBQ={db_path};"
+        )
+
+        try:
+            df = pd.read_sql(f"SELECT Nom, Prenom, RegistreNational, EMail, DateIn, Id, Division FROM [{table_name}]", conn)
+        except Exception as e:
+            logging.debug(e)
+            logging.exception("Could not execute query to access database")
+            raise
+
+        finally:
+            conn.close()
+
+    df["Barcode"] = "C" + df["Id"].astype(str) + df["Division"].astype(str)
+    df["DateIn"] = pd.to_datetime(df["DateIn"], errors="coerce")
+    df = df[["Nom", "Prenom", "RegistreNational", "EMail", "DateIn", "Barcode"]].sort_values("DateIn", ascending=False)
+    df["DateIn"] = df["DateIn"].dt.strftime("%d/%m/%Y")
+
+    return df
+
+
+def xlsx2pd(db_path, column_names):
+    tab = pd.read_excel(db_path)
+    # tab[column_names["colonne_date_in"]] = pd.to_datetime(self.tab[self.column_names["colonne_date_in"]]).dt.strftime("%d/%m/%Y")
+    tab[column_names["colonne_date_in"]] = pd.to_datetime(tab[column_names["colonne_date_in"]], errors = "coerce")
+    tab = tab.sort_values("DateIn", ascending=False)
+    tab["DateIn"] = tab["DateIn"].dt.strftime("%d/%m/%Y")
+
+    return tab
+
+
+
+class DbData:
+
+    def __init__(self, db_path : str, column_names : dict, import_method):
+        self.column_names = column_names
+        self.tab = import_method(db_path, column_names)
+
+    def return_from_barcode(self, barcode : str) -> dict:
+        res = self.tab.loc[self.tab[self.column_names["colonne_barcode"]] == barcode]
+        
+        if len(res) != 1:
+            raise ValueError(
+                f"Expected exactly one occurence for the contract {barcode}, found {len(res)}:\n{res}"
+            )
+            
+        return res.iloc[0].to_dict()
+            
+    def return_from_RN(self, RN : int) -> dict:
+        res = self.tab.loc[self.tab[self.column_names["colonne_registre_national"]] == RN]
+
+        
+        if len(res) != 1:
+            nunique_cols = [
+                self.column_names["colonne_registre_national"],
+                self.column_names["colonne_mail"], 
+                self.column_names["colonne_nom"], 
+                self.column_names["colonne_prenom"]
+                ]
+            if (len(res[nunique_cols].drop_duplicates()) != 1):
+                raise ValueError(
+                    f"Duplicates in the table do not match:\n{res}"
+                )
+            
+        return res.iloc[0].to_dict()
+
+
+class NRExtractor:
+
+    def __init__(self, pdf_path:str):
+        self.pdf_path = pdf_path
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass
+
+    def extract(self) -> dict:
+        res = {
+            "RN":None,
+            "date_in":None,
+            "date_out":None
+            }
+
+        with open(self.pdf_path, "rb") as fp:
+            reader = pypdf.PdfReader(fp)
+            text = reader.pages[0].extract_text()
+        
+        for line in text.split("\n"):
+
+            if line.startswith("TRAVAILLEUR"):
+                res["RN"] = int(line[13:34].replace(" ",""))
+            elif line.startswith("WERKNEMER"):
+                res["RN"] = int(line[11:32].replace(" ",""))
+
+            elif line.startswith("Date de début de l'occupation"):
+                date = line[31:48].replace(" ","")
+                validate_date(date)
+                res["date_in"] = date
+            elif line.startswith("Begindatum tewerkstelling"):
+                date = line[27:45].replace(" ","")
+                validate_date(date)
+                res["date_in"] = date
+
+            elif line.startswith("Date de fin de l'occupation"):
+                date = line[29:46].replace(" ","")
+                validate_date(date)
+                res["date_out"] = date
+            elif line.startswith("Einddatum tewerkstelling"):
+                date = line[26:44].replace(" ","")
+                validate_date(date)
+                res["date_out"] = date
+
+            if not (None in res.values()):
+                return res
+
+        raise ValueError(f"Could not extract info from {self.pdf_path}: {res}")
+
+    def extract_NR_pypdf(self) -> int:
+        reader = pypdf.PdfReader(self.pdf_path)
+        text = reader.pages[0].extract_text()
+
+        found = False
+        
+        for line in text.split("\n"):
+            if line.startswith("TRAVAILLEUR"):
+                found = True
+                break
+
+        if not found:
+            raise Exception("No NISS found in pdf {self.pdf_path}")
+
+        return int(line[13:34].replace(" ",""))
+
+
+def info_from_RN(xlsx_data: DbData, file : str) -> dict:
+    with NRExtractor(file) as ext:
+        pdf_info = ext.extract()
+    pdict = xlsx_data.return_from_RN(pdf_info["RN"])
+    
+    for item in [xlsx_data.column_names['colonne_mail'], xlsx_data.column_names['colonne_nom'], xlsx_data.column_names['colonne_prenom']]:
+        if item not in pdict.keys():
+            raise ValueError(f"Parameter '{item}' not found in the database")
+
+    return pdict | pdf_info
+
+def info_from_barcode(xlsx_data: DbData, file : str) -> dict:
+    barcode = os.path.splitext(os.path.basename(file))[0]
+    pdict = xlsx_data.return_from_barcode(barcode)
+    
+    for item in [xlsx_data.column_names['colonne_mail'], xlsx_data.column_names['colonne_prenom'], xlsx_data.column_names['colonne_date_in']]:
+        if item not in pdict.keys():
+            raise ValueError(f"Parameter '{item}' not found in the database")
+
+    return pdict
