@@ -170,7 +170,7 @@ def send_emails(config: dict, perso_info_extract):
     for f in os.listdir(config["to_send_folder_path"].get_value()):
         if f.endswith('.pdf'):
             files.append(os.path.join(config["to_send_folder_path"].get_value(), f))
-    logging.info(f"{len(files)} fichiers pdf trouvés")
+    logging.info(f"{len(files)} pdf files found")
     
     count = 0
     for f in files:
@@ -215,7 +215,7 @@ def send_emails(config: dict, perso_info_extract):
                 filename=os.path.basename(f)
             )
         
-            logging.info(f"{count}/{len(files)} Envoi à {pdict[config['colonne_prenom'].get_value()]} {pdict[config['colonne_nom'].get_value()]} ({pdict[config['colonne_mail'].get_value()]})")    
+            logging.info(f"{count}/{len(files)} Sending to {pdict[config['colonne_prenom'].get_value()]} {pdict[config['colonne_nom'].get_value()]} ({pdict[config['colonne_mail'].get_value()]})")    
             with smtplib.SMTP_SSL(config["smtp_server"].get_value(), config["smtp_port"].get_value()) as server:
                 # server.set_debuglevel(1)
                 if config["enable_starttls"].get_value():
@@ -224,12 +224,12 @@ def send_emails(config: dict, perso_info_extract):
                 server.send_message(msg)
 
             if copy_after_send_path is not None:
-                logging.info(f"Copie de {f}")
+                logging.info(f"Copying {f}")
                 shutil.copy(f, os.path.join(copy_after_send_path , os.path.basename(f)))
 
             if config["delete_after_sent"].get_value():
                 # os.remove(f)
-                logging.info(f"Suppression de {f}")
+                logging.info(f"Deleting {f}")
                 os.remove(f)
 
         except Exception as e:

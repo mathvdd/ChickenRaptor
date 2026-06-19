@@ -23,7 +23,7 @@ def create_log_button(logger_widget, service_manager, player = None):
     def copy_log():
         logger_widget.selectAll()
         logger_widget.copy()
-        logging.info('Log copié vers le clipboard')
+        logging.info('Log copied in the clipboard')
 
         cursor = logger_widget.textCursor()
         cursor.clearSelection()
@@ -35,7 +35,7 @@ def create_log_button(logger_widget, service_manager, player = None):
         try:
             service_manager.submit(lambda: copy_log(), service_name)
         except Exception as e:
-            logging.critical(f"Échec lors de l'exécution du service: {service_name}", exc_info=True)
+            logging.critical(f"Failed during {service_name}", exc_info=True)
 
     def on_finished(name):
         if name == service_name:
@@ -62,7 +62,7 @@ def create_mail_button(config, service_manager, butname, perso_info_selector, pl
         try:
             service_manager.submit(lambda: rpt_automail.send_emails(config, perso_info_selector), service_name)
         except Exception as e:
-            logging.critical(f"Échec lors de l'exécution du service: {service_name}", exc_info=True)
+            logging.critical(f"Failed during: {service_name}", exc_info=True)
 
     def on_finished(name):
         if name == service_name:
@@ -88,7 +88,7 @@ def create_annotate_button(config, service_manager, butname, player = None):
         try:
             service_manager.submit(lambda: rpt_pdf_ann.make_all_annotations(config), service_name)
         except Exception as e:
-            logging.critical(f"Échec lors de l'exécution du service: {service_name}", exc_info=True)
+            logging.critical(f"Failed during: {service_name}", exc_info=True)
 
     def on_finished(name):
         if name == service_name:
@@ -113,7 +113,7 @@ def create_transfer_button(config, service_manager, butname, player = None):
         try:
             service_manager.submit(lambda: rpt_transfer.transfer(config), service_name)
         except Exception as e:
-            logging.critical(f"Échec lors de l'exécution du service: {service_name}", exc_info=True)
+            logging.critical(f"Failed during: {service_name}", exc_info=True)
 
     def on_finished(name):
         if name == service_name:
@@ -138,9 +138,9 @@ def create_save_button(config_handler, player = None):
             config_handler.sync_widget2value()
             config_handler.export_config()
 
-            logging.info("Paramètres sauvés")
+            logging.info("Parameters saved")
         except Exception as e:
-            logging.critical(f"Échec de l'enregistrement des paramètres", exc_info=True)
+            logging.critical(f"Failed to save parameters", exc_info=True)
 
         finally:
             if player:

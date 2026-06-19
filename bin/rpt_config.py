@@ -8,7 +8,7 @@ def validate_date(date : str):
     try:
         datetime.strptime(date, "%d/%m/%Y")
     except ValueError as e:
-        logging.critical(f"Date invalide : {date}", exc_info=True)
+        logging.critical(f"Invalid date : {date}", exc_info=True)
 
 def validate_path(path: str, param_name: str = None, none_allowed = False):
     
@@ -56,7 +56,7 @@ class ConfigElement():
 
         if self.display == "Date":
             validate_date(raw)
-            logging.info(f"Configuration de la date au: {raw}")
+            logging.info(f"Setting date to: {raw}")
 
         try:
 
@@ -78,7 +78,7 @@ class ConfigElement():
             self.value = value
 
         except TypeError as e:
-            logging.critical(f"Impossible d'enregistrer {raw} de type {type(raw)}", exc_info=True)
+            logging.critical(f"Impossible to save {raw} of type {type(raw)}", exc_info=True)
 
 
     def get_value_type(self):
@@ -104,7 +104,7 @@ class RptConfig():
 
         self.make_config()
         if not os.path.isfile(self.config_path):
-            logging.info("Pas de fichier config.json trouvé, initiation du fichier")
+            logging.warning("No config.json found, making file with default values")
             self.export_config()
         else:
             self.import_config()
@@ -196,7 +196,7 @@ class RptConfig():
 
 
     def import_config(self):
-        logging.info("Importe config.json")        
+        logging.info("Importing config.json")        
         with open(self.config_path, 'r') as fp:
             configdict = json.load(fp)
 
@@ -208,7 +208,7 @@ class RptConfig():
                     self.config[section][key].set_value(value)
 
     def export_config(self):
-        logging.info("Exporte config.json")
+        logging.info("Exporting config.json")
 
         configdict = {}
 

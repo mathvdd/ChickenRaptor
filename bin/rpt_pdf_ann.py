@@ -35,7 +35,6 @@ class pdfAnnotater():
 
     def add_images(self, poss, impath, imsize):
         #dict of type {page_nb:[(x1,y1),(x2,y2)]}
-        print(poss, type(poss))
         for pos in poss:
             self.add_image(self.file_handle[pos[0]-1], pos[1:3], imsize, impath)
 
@@ -59,7 +58,7 @@ class pdfAnnotater():
         r_w, r_h = pymupdf.paper_size(page_size)
 
         if (abs(self.r_w - r_w) > 2) or (abs(self.r_h - r_h) > 2):
-            logging.info("Redimensionnement du pdf")
+            logging.info("Resizing pdf")
             self.file_handle.bake()
             newdoc = pymupdf.open()
 
@@ -90,7 +89,7 @@ def make_all_annotations(config: dict):
     #     if f.endswith('.pdf'):
     #         files.append(f)
 
-    logging.info(f"{len(files)} fichiers pdf trouvés")
+    logging.info(f"{len(files)} pdf files found")
 
     count = 0
     for fil in files:
@@ -104,7 +103,7 @@ def make_all_annotations(config: dict):
         else:
             output_file = os.path.join(config["output_folder"].get_value(), fil)
 
-        logging.info(f"{count}/{len(files)} Annotatation et déplacement de {os.path.basename(input_file)} ({os.path.basename(output_file)})")
+        logging.info(f"{count}/{len(files)} Annotating and moving {os.path.basename(input_file)} ({os.path.basename(output_file)})")
 
         with pdfAnnotater(input_file) as ann:
             ann.resize()
@@ -149,13 +148,13 @@ def make_all_annotations(config: dict):
         
 
         if config.get("delete_original").get_value() is True:
-            logging.info(f"Suppression de {fil}")
+            logging.info(f"Deleting {fil}")
             os.remove(input_file)
 
          
 
     if config.get("open_explorer") and config["open_explorer"].get_value():
-        logging.info(f"Ouverture de {config['output_folder'].get_value()} dans l'explorateur de fichier")
+        logging.info(f"Opening {config['output_folder'].get_value()} in the file explorer")
         if os.name == "posix":
             os.system(f"xdg-open {config['output_folder'].get_value()}")
         elif os.name == "nt":

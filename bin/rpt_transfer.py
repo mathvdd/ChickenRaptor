@@ -15,40 +15,40 @@ def transfer(config):
         files = [f for f in os.listdir(source_path) if (os.path.isfile(os.path.join(source_path,f)) and os.path.join(source_path,f).endswith(".pdf"))]
     files_JBE = [f for f in files if f.endswith('JBE.pdf')]
 
-    logging.info(f"{len(files)} fichiers trouvés, dont ({len(files_JBE)} à copier dans le répertoire JBE)")
+    logging.info(f"{len(files)} files found, including ({len(files_JBE)} JBE files")
 
     count = 0
     for file in files_JBE:
         count += 1
-        logging.info(f"{count}/{len(files_JBE)} Copie de {file} dans le répertoire JBE")
+        logging.info(f"{count}/{len(files_JBE)} Copying {file} in the JBE folder")
         shutil.copy(os.path.join(source_path,file), os.path.join(dest_JBE_path,file))
         
 
     to_transfert = [f for f in files if not os.path.isfile(os.path.join(dest_path,f))]
-    logging.info(f"{len(to_transfert)} fichiers à déplacer dans le répertoire principal")
+    logging.info(f"{len(to_transfert)} files to move in the main folder")
 
     count = 0
     for file in to_transfert:
         count += 1
-        logging.info(f"{count}/{len(to_transfert)} Déplacement de {file}")
+        logging.info(f"{count}/{len(to_transfert)} Moving {file}")
         shutil.copy(os.path.join(source_path,file), os.path.join(dest_path,file))
         os.remove(os.path.join(source_path,file))
 
     not_transfered = [f for f in os.listdir(source_path) if os.path.isfile(os.path.join(source_path,f))]
     if len(not_transfered) > 0:
-        logging.warning(f"{len(not_transfered)} fichiers non transférés (déjà présents dans {dest_path}):")
+        logging.warning(f"{len(not_transfered)} files not moved (already in {dest_path}):")
         for f in not_transfered:
-            logging.warning(f"{f} non transféré")
+            logging.warning(f"{f} not moved")
 
     if to_clean_path is not None:    
         to_del = [os.path.join(to_clean_path,f) for f in os.listdir(to_clean_path) if os.path.isfile(os.path.join(to_clean_path,f)) ]
-        logging.info(f"{len(to_del)} fichiers à supprimer de {to_clean_path}")
+        logging.info(f"{len(to_del)} files to clean from {to_clean_path}")
         for file in to_del:
-            logging.info(f"Suppression de {file}")
+            logging.info(f"Deleting {file}")
             os.remove(file)
 
     if config.get("open_explorer") and config["open_explorer"].get_value():
-        logging.info(f"Ouverture de {source_path} dans l'explorateur de fichier")
+        logging.info(f"Opening {source_path} in the file explorer")
         if os.name == "posix":
             os.system(f"xdg-open {source_path}")
         elif os.name == "nt":
