@@ -167,7 +167,8 @@ class MainWindow(QWidget):
                     
                 else:
                     edit = QLineEdit(str(element.get_value()))
-                key_display = element.display if element.display is not None else key
+                # key_display = element.display if element.display is not None else key
+                key_display = key
                 form_layout.addRow(f"{key_display}:", edit)
                 element.set_widget(edit)
 
