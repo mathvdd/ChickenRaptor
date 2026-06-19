@@ -111,7 +111,7 @@ def create_transfer_button(config, service_manager, butname, player = None):
         button.setEnabled(False)
 
         try:
-            service_manager.submit(lambda: rpt_transfer.transfertC4(config), service_name)
+            service_manager.submit(lambda: rpt_transfer.transfer(config), service_name)
         except Exception as e:
             logging.critical(f"Échec lors de l'exécution du service: {service_name}", exc_info=True)
 

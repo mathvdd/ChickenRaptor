@@ -10,15 +10,21 @@ def validate_date(date : str):
     except ValueError as e:
         logging.critical(f"Date invalide : {date}", exc_info=True)
 
-def validate_path(path: str, param_name: str = None):
+def validate_path(path: str, param_name: str = None, none_allowed = False):
     
-    if not os.path.isdir(path):
-        msg = f"Could not locate the path: {path}" if param_name is None else f"Could not locate '{param_name}': {path}"
-        raise ValueError(msg)
+    if none_allowed and path in [None, "None", "none", ""]:
+        return None
     
-    if len(path) == 0:
-        msg = f"Path empty" if param_name is None else f"Empty path '{param_name}': {path}"
-        raise ValueError(msg)
+    else:
+        if not os.path.isdir(path):
+            msg = f"Could not locate the path: {path}" if param_name is None else f"Could not locate '{param_name}': {path}"
+            raise ValueError(msg)
+        
+        if len(path) == 0:
+            msg = f"Path empty" if param_name is None else f"Empty path '{param_name}': {path}"
+            raise ValueError(msg)
+
+        return path
     
 def validate_file_path(path: str, param_name: str = None):
     
@@ -29,6 +35,8 @@ def validate_file_path(path: str, param_name: str = None):
     if len(path) == 0:
         msg = f"Path empty" if param_name is None else f"Empty path '{param_name}': {path}"
         raise ValueError(msg)
+
+    return path
 
 translate_values = {
     "True":"Oui",
@@ -67,7 +75,7 @@ class ConfigElement():
                 else:
                     value = raw
 
-            self.value = value
+            self.value = raw
 
         except TypeError as e:
             logging.critical(f"Impossible d'enregistrer {raw} de type {type(raw)}", exc_info=True)
