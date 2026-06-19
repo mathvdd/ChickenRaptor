@@ -75,7 +75,7 @@ class ConfigElement():
                 else:
                     value = raw
 
-            self.value = raw
+            self.value = value
 
         except TypeError as e:
             logging.critical(f"Impossible d'enregistrer {raw} de type {type(raw)}", exc_info=True)
