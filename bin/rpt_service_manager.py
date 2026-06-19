@@ -26,9 +26,9 @@ class ServiceWorker(QObject):
     def run_job(self, func, name):
         try:
 
-            logging.info(f"Démarrage de {name}")
+            logging.info(f"Starting {name}")
             func()
-            logging.info(f"{name} exécuté avec succès\n")
+            logging.info(f"{name} ended\n")
             self.finished.emit(name)
 
         except Exception as e:

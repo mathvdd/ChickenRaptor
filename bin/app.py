@@ -61,7 +61,7 @@ class MainWindow(QWidget):
         #     }
         # """)
         layout.addWidget(self.logger_widget, 0, 1, 10, 1)
-        self.logger = app_logger.setup_logging()
+        self.logger = app_logger.setup_logging(level=logging.DEBUG)
         app_logger.attach_qt_logger(self.logger, self.logger_widget)
         logging.info("CHICKEN RAPTOR IS ON STEROIDS")
 

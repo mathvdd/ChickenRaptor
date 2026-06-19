@@ -155,6 +155,9 @@ def send_emails(config: dict, perso_info_extract):
 
     validate_file_path(config["xlsx_path"].get_value(), "xlsx_path")
     validate_path(config["to_send_folder_path"].get_value(), "to_send_folder_path")
+    copy_after_send_path = validate_path(config["copy_after_send_path"].get_value(), "copy_after_send_path", none_allowed=True)
+    if copy_after_send_path is None:
+        logging.info("copy_after_send_path not defined, will not copy")
 
     xlsx_data = xlsxData(
         xlsx_path = config["xlsx_path"].get_value(),
@@ -171,53 +174,64 @@ def send_emails(config: dict, perso_info_extract):
     
     count = 0
     for f in files:
+        
         count += 1
-        pdict = perso_info_extract(xlsx_data, f)
+        try:
 
-        ## check this log_name thing and pdf_info not always generated
+            pdict = perso_info_extract(xlsx_data, f)
 
-        msg = EmailMessage()
-        msg["to"] = pdict[config['colonne_mail'].get_value()]
-        msg["from"] = config["sender_email"].get_value()
-        msg["subject"] = replace_in_text(
-                to_parse = config["mail_subject"].get_value(),
-                replace = {
-                    "date_in_xlsx" : pdict[config['colonne_date_in'].get_value()],
-                    "barcode" : pdict[config['colonne_barcode'].get_value()],
-                    "date_in" : pdict["date_in"] if pdict.get("date_in") else None,
-                    "date_out" : pdict["date_out"] if pdict.get("date_out") else None
-                },
-                log_name = "mail_subject")
+            ## check this log_name thing and pdf_info not always generated
 
-        msg.set_content(
-            replace_in_text(
-                to_parse = config["mail_body"].get_value(),
-                replace = {
-                    "prenom" : pdict[config['colonne_prenom'].get_value()].lower().capitalize(),
-                    "date_in_xlsx" : pdict[config['colonne_date_in'].get_value()]
-                },
-                log_name = "mail_body")
-            .replace("\\n", "\n")
-        )
+            msg = EmailMessage()
+            msg["to"] = pdict[config['colonne_mail'].get_value()]
+            msg["from"] = config["sender_email"].get_value()
+            msg["subject"] = replace_in_text(
+                    to_parse = config["mail_subject"].get_value(),
+                    replace = {
+                        "date_in_xlsx" : pdict[config['colonne_date_in'].get_value()],
+                        "barcode" : pdict[config['colonne_barcode'].get_value()],
+                        "date_in" : pdict["date_in"] if pdict.get("date_in") else None,
+                        "date_out" : pdict["date_out"] if pdict.get("date_out") else None
+                    },
+                    log_name = "mail_subject")
 
-        with open(f, "rb") as pdf_file:
-            pdf_data = pdf_file.read()
-        msg.add_attachment(
-            pdf_data,
-            maintype="application",
-            subtype="pdf",
-            filename=os.path.basename(f)
-        )
-    
-        logging.info(f"{count}/{len(files)} Envoi à {pdict[config['colonne_prenom'].get_value()]} {pdict[config['colonne_nom'].get_value()]} ({pdict[config['colonne_mail'].get_value()]})")    
-        with smtplib.SMTP_SSL(config["smtp_server"].get_value(), config["smtp_port"].get_value()) as server:
-            # server.set_debuglevel(1)
-            if config["enable_starttls"].get_value():
-                server.starttls()
-            server.login(config['sender_email'].get_value(), config['sender_pwd'].get_value())
-            server.send_message(msg)
+            msg.set_content(
+                replace_in_text(
+                    to_parse = config["mail_body"].get_value(),
+                    replace = {
+                        "prenom" : pdict[config['colonne_prenom'].get_value()].lower().capitalize(),
+                        "date_in_xlsx" : pdict[config['colonne_date_in'].get_value()]
+                    },
+                    log_name = "mail_body")
+                .replace("\\n", "\n")
+            )
 
-        if config["delete_after_sent"].get_value():
-            # os.remove(f)
-            logging.info(f"Suppression de {f}")
-            os.remove(f)
+            with open(f, "rb") as pdf_file:
+                pdf_data = pdf_file.read()
+            msg.add_attachment(
+                pdf_data,
+                maintype="application",
+                subtype="pdf",
+                filename=os.path.basename(f)
+            )
+        
+            logging.info(f"{count}/{len(files)} Envoi à {pdict[config['colonne_prenom'].get_value()]} {pdict[config['colonne_nom'].get_value()]} ({pdict[config['colonne_mail'].get_value()]})")    
+            with smtplib.SMTP_SSL(config["smtp_server"].get_value(), config["smtp_port"].get_value()) as server:
+                # server.set_debuglevel(1)
+                if config["enable_starttls"].get_value():
+                    server.starttls()
+                server.login(config['sender_email'].get_value(), config['sender_pwd'].get_value())
+                server.send_message(msg)
+
+            if copy_after_send_path is not None:
+                logging.info(f"Copie de {f}")
+                shutil.copy(f, os.path.join(copy_after_send_path , os.path.basename(f)))
+
+            if config["delete_after_sent"].get_value():
+                # os.remove(f)
+                logging.info(f"Suppression de {f}")
+                os.remove(f)
+
+        except Exception as e:
+            logging.debug(e)            
+            logging.warning(f"{count}/{len(files)} Operation aborted for {f}")

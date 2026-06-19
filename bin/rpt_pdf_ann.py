@@ -35,6 +35,7 @@ class pdfAnnotater():
 
     def add_images(self, poss, impath, imsize):
         #dict of type {page_nb:[(x1,y1),(x2,y2)]}
+        print(poss, type(poss))
         for pos in poss:
             self.add_image(self.file_handle[pos[0]-1], pos[1:3], imsize, impath)
 

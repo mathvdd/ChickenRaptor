@@ -179,6 +179,7 @@ class RptConfig():
 
             "send_email_C4" : {
                 "to_send_folder_path" : ConfigElement("", str, display="Dossier à traiter"),
+                "copy_after_send_path" : ConfigElement("", str, display=None),
                 "delete_after_sent" : ConfigElement(False, bool, display="Supprimer après envoi"),
                 "mail_subject" : ConfigElement("Available fields: date_in: {date_in}, date_out: {date_out}", str, display="Sujet"),
                 "mail_body" : ConfigElement("Available fields: prenom: {prenom}", str, display="Corps de texte")
@@ -186,6 +187,7 @@ class RptConfig():
     
             "send_email_contract" : {
                 "to_send_folder_path" : ConfigElement("", str, display="Dossier à traiter"),
+                "copy_after_send_path" : ConfigElement("", str, display=None),
                 "delete_after_sent" : ConfigElement(False, bool, display="Supprimer après envoi"),
                 "mail_subject" : ConfigElement("Available fields: date_in_xlsx: {date_in_xlsx}", str, display="Sujet"),
                 "mail_body" : ConfigElement("Available fields: prenom: {prenom}, date_in_xlsx: {date_in_xlsx}", str, display="Corps de texte")
