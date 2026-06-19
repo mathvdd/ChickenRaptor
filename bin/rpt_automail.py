@@ -6,7 +6,7 @@ from email.message import EmailMessage
 import smtplib
 from datetime import datetime
 from rpt_config import validate_date, validate_path, validate_file_path
-
+import shutil
 
 class NRExtractor:
 
