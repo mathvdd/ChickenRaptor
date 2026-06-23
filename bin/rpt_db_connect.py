@@ -5,6 +5,7 @@ import subprocess
 from io import StringIO
 import pypdf
 from rpt_config import validate_date
+import logging
 
 def access2pd(db_path, column_names, table_name="T_Contrats"):
 
@@ -86,20 +87,23 @@ class DbData:
         return res.iloc[0].to_dict()
             
     def return_from_RN(self, RN : int) -> dict:
-        res = self.tab.loc[self.tab[self.column_names["colonne_registre_national"]] == RN]
-
+        res = self.tab.loc[self.tab[self.column_names["colonne_registre_national"]] == str(RN)]
         
-        if len(res) != 1:
-            nunique_cols = [
-                self.column_names["colonne_registre_national"],
-                self.column_names["colonne_mail"], 
-                self.column_names["colonne_nom"], 
-                self.column_names["colonne_prenom"]
-                ]
-            if (len(res[nunique_cols].drop_duplicates()) != 1):
-                raise ValueError(
-                    f"Duplicates in the table do not match:\n{res}"
-                )
+        if len(res) == 0:
+            raise ValueError(
+                f"Did not find a match in the database for {RN}"
+            )
+        # elif len(res) != 1:
+        #     nunique_cols = [
+        #         self.column_names["colonne_registre_national"],
+        #         self.column_names["colonne_mail"], 
+        #         self.column_names["colonne_nom"], 
+        #         self.column_names["colonne_prenom"]
+        #         ]
+        #     if (len(res[nunique_cols].drop_duplicates()) != 1):
+        #         logging.warning(
+        #             f"Duplicates not matching in the table, taking more recent entry"
+        #         )
             
         return res.iloc[0].to_dict()
 
