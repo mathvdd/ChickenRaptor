@@ -1,6 +1,5 @@
 import os
 import logging
-import pypdf
 import pandas as pd
 from email.message import EmailMessage
 import smtplib

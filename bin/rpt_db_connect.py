@@ -3,7 +3,7 @@ from rpt_config import validate_file_path
 import pandas as pd
 import subprocess
 from io import StringIO
-
+import pypdf
 
 def access2pd(db_path, column_names, table_name="T_Contrats"):
 

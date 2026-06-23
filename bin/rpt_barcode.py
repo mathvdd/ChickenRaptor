@@ -4,7 +4,6 @@ from pyzbar.pyzbar import decode
 
 def read_barcode(path : str) -> str:
     logging.info("Reading barcode")
-    # covert pdf to PIL, take the first page
     img = convert_from_path(path, dpi=600)[0]
 
     w_img, h_img = img.size
