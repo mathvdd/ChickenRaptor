@@ -10,6 +10,7 @@ import rpt_pdf_ann
 import rpt_transfer
 import subprocess
 import os
+import sys
 
 class NoScrollQComboBox(QComboBox):
     def wheelEvent(self, event):
@@ -76,11 +77,13 @@ def create_update_button(logger_widget, service_manager, player = None):
         return behind
 
     def git_update():
+        nonlocal restart_required
 
         behind = git_get_behind()
         if behind == 0:
             logging.info("Already up to date.")
-        else:
+        else:    
+
             logging.info(
                 f"Update available: {behind} commit{'s' if behind != 1 else ''} behind."
             )
@@ -92,32 +95,50 @@ def create_update_button(logger_widget, service_manager, player = None):
                 capture_output=True,
                 text=True,
             )
-
             logging.info(pull_result.stdout)
-            
+
+            restart_required = True
+
+    def restart_app():
+        os.execv(sys.executable, [sys.executable] + sys.argv)
     
     behind = git_get_behind()
     
-    butname = f"Update {f'({behind})' if behind != 0 else ''}"
+    butname = "Update"
     button = QPushButton(butname)
-    
+    button.setText(f"{butname} {f'({behind})' if behind != 0 else ''}")
+
     service_name = f"RAPTOR UPDATE SERVICE: {butname}"
-        
+
+    restart_required = False
 
     def on_click():
+        if restart_required:
+            restart_app()
+            return
+
         button.setEnabled(False)
 
         try:
             service_manager.submit(lambda: git_update(), service_name)
+            
         except Exception as e:
             logging.critical(f"Failed during {service_name}", exc_info=True)
 
     def on_finished(name):
         if name == service_name:
+            
             button.setEnabled(True)
+
+            if restart_required:
+                button.setText("Restart")
+            # else:
+            #     behind = git_get_behind()
+            #     button.setText(f"Update ({behind})" if behind else "Update")
+
             if player:
                 player.randomly_play_random()
-
+            
 
     service_manager.worker.finished.connect(on_finished)
     service_manager.worker.failed.connect(on_finished)
