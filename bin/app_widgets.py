@@ -82,7 +82,6 @@ def create_update_button(logger_widget, service_manager, player = None):
         behind = git_get_behind()
         if behind == 0:
             logging.info("Already up to date.")
-            restart_required = True
         else:    
 
             logging.info(
