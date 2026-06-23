@@ -82,6 +82,7 @@ def create_update_button(logger_widget, service_manager, player = None):
         behind = git_get_behind()
         if behind == 0:
             logging.info("Already up to date.")
+            restart_required = True
         else:    
 
             logging.info(
@@ -100,8 +101,18 @@ def create_update_button(logger_widget, service_manager, player = None):
             restart_required = True
 
     def restart_app():
-        os.execv(sys.executable, [sys.executable] + sys.argv)
-    
+        # os.execv(sys.executable, [sys.executable] + sys.argv)
+        
+        python = sys.executable
+        script = os.path.abspath(sys.argv[0])
+
+        subprocess.Popen(
+            [python, script] + sys.argv[1:],
+            cwd=os.path.dirname(script),
+        )
+
+        os._exit(0)
+
     behind = git_get_behind()
     
     butname = "Update"
