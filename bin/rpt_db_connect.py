@@ -4,6 +4,7 @@ import pandas as pd
 import subprocess
 from io import StringIO
 import pypdf
+from rpt_config import validate_date
 
 def access2pd(db_path, column_names, table_name="T_Contrats"):
 
