@@ -5,8 +5,21 @@ from pyzbar.pyzbar import decode
 def read_barcode(path : str) -> str:
     logging.info("Reading barcode")
     # covert pdf to PIL, take the first page
-    img = convert_from_path(path)[0]
-    detectedBarcodes = decode(img)
+    img = convert_from_path(path, dpi=600)[0]
+
+    w_img, h_img = img.size
+
+    crop = img.crop((
+        int(w_img * 0.66),
+        int(h_img * 0.04),
+        int(w_img * 0.95),
+        int(h_img * 0.14),
+    ))
+
+    detectedBarcodes = decode(crop)
+
+
+    # detectedBarcodes = decode(img)
     if not detectedBarcodes:
         raise ValueError(f"Could not detect barcode in {path}")
     else:
@@ -15,15 +28,19 @@ def read_barcode(path : str) -> str:
 
         else:
             barcode = detectedBarcodes[0]
-            # Locate the barcode position in image
+
+            # ##display the detection
             # (x, y, w, h) = barcode.rect
-
-            # Put the rectangle in image using
-            # cv2 to highlight the barcode
-
-             # cv2.rectangle(img, (x-10, y-10),
-             #              (x + w+10, y + h+10),
-             #              (255, 0, 0), 2)
+            # from PIL import ImageDraw
+            # import os
+            # name = os.path.splitext(os.path.basename(path))[0]
+            # draw = ImageDraw.Draw(crop)
+            # draw.rectangle(
+            #     [(x, y), (x + w, y + h)],
+            #     outline="red",
+            #     width=10
+            # )
+            # crop.save(f"{name}_highlighted.png")
 
             if barcode.data != "":
 
