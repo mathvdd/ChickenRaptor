@@ -22,11 +22,11 @@ def replace_in_text(to_parse : str, replace : dict, log_name : str):
 def send_emails(config: dict, perso_info_extract):
 
     if config["accdb_over_xlsx"].get_value():
-        logging.info(f"Using {config["accdb_path"].get_value()} file as database")
+        logging.info(f"Using {config['accdb_path'].get_value()} file as database")
         db_path = validate_file_path(config["accdb_path"].get_value(), "accdb_path")
         import_method = rpt_db_connect.access2pd
     else:
-        logging.info(f"Using {config["xlsx_path"].get_value()} file as database")
+        logging.info(f"Using {config['xlsx_path'].get_value()} file as database")
         db_path = validate_file_path(config["xlsx_path"].get_value(), "xlsx_path")
         import_method = rpt_db_connect.xlsx2pd
     
