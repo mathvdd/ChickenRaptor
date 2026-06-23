@@ -99,7 +99,7 @@ def create_update_button(logger_widget, service_manager, player = None):
     behind = git_get_behind()
     
     butname = f"Update {f'({behind})' if behind != 0 else ''}"
-    button = QPushButton("test up but")
+    button = QPushButton(butname)
     
     service_name = f"RAPTOR UPDATE SERVICE: {butname}"
         
