@@ -21,6 +21,7 @@ def access2pd(db_path, column_names, table_name="T_Contrats"):
             "RegistreNational",
             "EMail",
             "DateIn",
+            "DateOut",
             "Id",
             "Division"
             ]]
@@ -33,7 +34,7 @@ def access2pd(db_path, column_names, table_name="T_Contrats"):
         )
 
         try:
-            df = pd.read_sql(f"SELECT Nom, Prenom, RegistreNational, EMail, DateIn, Id, Division FROM [{table_name}]", conn)
+            df = pd.read_sql(f"SELECT Nom, Prenom, RegistreNational, EMail, DateIn, DateOut, Id, Division FROM [{table_name}]", conn)
         except Exception as e:
             logging.debug(e)
             logging.exception("Could not execute query to access database")
@@ -43,9 +44,11 @@ def access2pd(db_path, column_names, table_name="T_Contrats"):
             conn.close()
 
     df["Barcode"] = "C" + df["Id"].astype(str) + df["Division"].astype(str)
-    df["DateIn"] = pd.to_datetime(df["DateIn"], errors="coerce")
-    df = df[["Nom", "Prenom", "RegistreNational", "EMail", "DateIn", "Barcode"]].sort_values("DateIn", ascending=False)
+    df["DateIn"] = pd.to_datetime(df["DateIn"], errors="coerce", format="%m/%d/%y %H:%M:%S",)
+    df["DateOut"] = pd.to_datetime(df["DateOut"], errors="coerce", format="%m/%d/%y %H:%M:%S",)
+    df = df[["Nom", "Prenom", "RegistreNational", "EMail", "DateIn", "DateOut", "Barcode"]].sort_values("DateIn", ascending=False)
     df["DateIn"] = df["DateIn"].dt.strftime("%d/%m/%Y")
+    df["DateOut"] = df["DateOut"].dt.strftime("%d/%m/%Y")
 
     return df
 
@@ -54,8 +57,12 @@ def xlsx2pd(db_path, column_names):
     tab = pd.read_excel(db_path)
     # tab[column_names["colonne_date_in"]] = pd.to_datetime(self.tab[self.column_names["colonne_date_in"]]).dt.strftime("%d/%m/%Y")
     tab[column_names["colonne_date_in"]] = pd.to_datetime(tab[column_names["colonne_date_in"]], errors = "coerce")
-    tab = tab.sort_values("DateIn", ascending=False)
-    tab["DateIn"] = tab["DateIn"].dt.strftime("%d/%m/%Y")
+    tab = tab.sort_values(column_names["colonne_date_in"], ascending=False)
+    tab[column_names["colonne_date_in"]] = tab[column_names["colonne_date_in"]].dt.strftime("%d/%m/%Y")
+
+    tab[column_names["colonne_date_out"]] = pd.to_datetime(tab[column_names["colonne_date_out"]], errors = "coerce")
+    tab = tab.sort_values(column_names["colonne_date_out"], ascending=False)
+    tab[column_names["colonne_date_out"]] = tab[column_names["colonne_date_out"]].dt.strftime("%d/%m/%Y")
 
     return tab
 

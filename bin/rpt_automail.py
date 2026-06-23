@@ -16,7 +16,7 @@ def replace_in_text(to_parse : str, replace : dict, log_name : str):
         if "{" + key + "}" in to_parse:
             to_parse = to_parse.replace("{" + key + "}", value)
     if (to_parse.count("{") + to_parse.count("}")) > 0: 
-        raise Exception(f"Error reading {{}} parameters in parameter {log_name}") 
+        raise Exception(f"Error reading {{}} parameters in parameter {log_name}")
     return to_parse
 
 
@@ -56,34 +56,38 @@ def send_emails(config: dict, perso_info_extract):
         
         count += 1
         try:
-
             pdict = perso_info_extract(db_data, f)
 
             ## check this log_name thing and pdf_info not always generated
 
+
             msg = EmailMessage()
             msg["to"] = pdict[config['colonne_mail'].get_value()]
             msg["from"] = config["sender_email"].get_value()
+            
             msg["subject"] = replace_in_text(
                     to_parse = config["mail_subject"].get_value(),
                     replace = {
                         "date_in_xlsx" : pdict[config['colonne_date_in'].get_value()],
+                        "date_out_xlsx" : pdict[config['colonne_date_out'].get_value()],
                         "barcode" : pdict[config['colonne_barcode'].get_value()],
                         "date_in" : pdict["date_in"] if pdict.get("date_in") else None,
                         "date_out" : pdict["date_out"] if pdict.get("date_out") else None
                     },
                     log_name = "mail_subject")
-
+                    
             msg.set_content(
                 replace_in_text(
                     to_parse = config["mail_body"].get_value(),
                     replace = {
                         "prenom" : pdict[config['colonne_prenom'].get_value()].lower().capitalize(),
-                        "date_in_xlsx" : pdict[config['colonne_date_in'].get_value()]
+                        "date_in_xlsx" : pdict[config['colonne_date_in'].get_value()],
+                        "date_out_xlsx" : pdict[config['colonne_date_out'].get_value()]
                     },
                     log_name = "mail_body")
                 .replace("\\n", "\n")
             )
+            
 
             with open(f, "rb") as pdf_file:
                 pdf_data = pdf_file.read()
@@ -93,7 +97,6 @@ def send_emails(config: dict, perso_info_extract):
                 subtype="pdf",
                 filename=os.path.basename(f)
             )
-        
             logging.info(f"{count}/{len(files)} Sending to {pdict[config['colonne_prenom'].get_value()]} {pdict[config['colonne_nom'].get_value()]} ({pdict[config['colonne_mail'].get_value()]})")    
             with smtplib.SMTP_SSL(config["smtp_server"].get_value(), config["smtp_port"].get_value()) as server:
                 # server.set_debuglevel(1)

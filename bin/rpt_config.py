@@ -180,6 +180,7 @@ class RptConfig():
                 "colonne_mail" : ConfigElement("EMail", str, display='Colonne "e-mail"'),
                 "colonne_registre_national" : ConfigElement("RegistreNational", str, display='Colonne "Registre National"'),
                 "colonne_date_in" : ConfigElement("DateIn", str, display='Colonne "date in"'),
+                "colonne_date_out" : ConfigElement("DateOut", str, display='Colonne "date out"'),
                 "colonne_barcode" : ConfigElement("Barcode", str, display='Colonne "barcode"')
             },
 
