@@ -133,7 +133,7 @@ class MainWindow(QWidget):
         layout.addWidget(label, 8, 0)
 
         layout.addWidget(
-            app_widgets.create_log_button(
+            app_widgets.create_update_button(
                 self.logger_widget,
                 self.service_manager,
                 self.player

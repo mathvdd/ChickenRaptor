@@ -8,7 +8,8 @@ import logging
 import rpt_automail
 import rpt_pdf_ann
 import rpt_transfer
-
+import subprocess
+import os
 
 class NoScrollQComboBox(QComboBox):
     def wheelEvent(self, event):
@@ -34,6 +35,80 @@ def create_log_button(logger_widget, service_manager, player = None):
 
         try:
             service_manager.submit(lambda: copy_log(), service_name)
+        except Exception as e:
+            logging.critical(f"Failed during {service_name}", exc_info=True)
+
+    def on_finished(name):
+        if name == service_name:
+            button.setEnabled(True)
+            if player:
+                player.randomly_play_random()
+
+
+    service_manager.worker.finished.connect(on_finished)
+    service_manager.worker.failed.connect(on_finished)
+    
+    button.clicked.connect(on_click)
+    return button
+
+
+def create_update_button(logger_widget, service_manager, player = None):
+
+    base = os.path.join(os.path.dirname(__file__), "..")
+
+    def git_get_behind():
+        subprocess.run(
+            ["git", "fetch"],
+            cwd=base,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        behind = int(
+            subprocess.check_output(
+                ["git", "rev-list", "--count", "HEAD..@{u}"],
+                cwd=base,
+                text=True,
+            ).strip()
+        )
+
+        return behind
+
+    def git_update():
+
+        behind = git_get_behind()
+        if behind == 0:
+            logging.info("Already up to date.")
+        else:
+            logging.info(
+                f"Update available: {behind} commit{'s' if behind != 1 else ''} behind."
+            )
+
+            pull_result = subprocess.run(
+                ["git", "pull"],
+                cwd=base,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+
+            logging.info(pull_result.stdout)
+            
+    
+    behind = git_get_behind()
+    
+    butname = f"Update {f'({behind})' if behind != 0 else ''}"
+    button = QPushButton(butname)
+    
+    service_name = f"RAPTOR UPDATE SERVICE: {butname}"
+        
+
+    def on_click():
+        button.setEnabled(False)
+
+        try:
+            service_manager.submit(lambda: git_update(), service_name)
         except Exception as e:
             logging.critical(f"Failed during {service_name}", exc_info=True)
 
