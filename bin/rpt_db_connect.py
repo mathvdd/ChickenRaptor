@@ -66,6 +66,8 @@ def xlsx2pd(db_path, column_names):
     tab[column_names["colonne_date_out"]] = pd.to_datetime(tab[column_names["colonne_date_out"]], errors = "coerce")
     tab = tab.sort_values(column_names["colonne_date_out"], ascending=False)
     tab[column_names["colonne_date_out"]] = tab[column_names["colonne_date_out"]].dt.strftime("%d/%m/%Y")
+    
+    tab[column_names["colonne_registre_national"]] = tab[column_names["colonne_registre_national"]].astype(str)
 
     return tab
 
