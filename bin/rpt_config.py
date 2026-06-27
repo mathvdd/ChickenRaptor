@@ -147,6 +147,7 @@ class RptConfig():
                 "signature_positions" : ConfigElement([], list, display="Positions Signature"),
                 "cachet_positions" : ConfigElement([], list, display="Positions Cachet"),
                 "append_to_name" : ConfigElement("_signe", str, display="Suffixe renommage"),
+                "open_explorer" : ConfigElement(True, bool, display="Ouvrir Explorer"),
             },
 
             "specific_C4Bis" : {
