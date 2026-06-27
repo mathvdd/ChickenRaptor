@@ -3,6 +3,7 @@ import os
 import pymupdf
 from rpt_barcode import read_barcode
 from rpt_config import validate_path, validate_file_path
+from rpt_db_connect import NRExtractor
 
 class pdfAnnotater():
     def __init__(self, pdf_path:str):
@@ -75,8 +76,13 @@ class pdfAnnotater():
     def save(self, path):
         self.file_handle.save(path)
 
-    
-def make_all_annotations(config: dict):
+def rename_C4(output_path, paramdict):
+    head, tail = os.path.split(output_path)
+    root, ext = os.path.splitext(tail)
+    new_name = os.path.join( head, (paramdict['name'][:].replace(' ', '_') + '_' + paramdict['hash'][:4] + ext).replace('__','_'))
+    return new_name
+
+def make_all_annotations(config: dict, rename = None):
     validate_path(config["input_folder"].get_value(), "input_folder")
     validate_path(config["output_folder"].get_value(), "output_folder")
 
@@ -102,6 +108,8 @@ def make_all_annotations(config: dict):
             output_file = os.path.join(config["output_folder"].get_value(),  fil[:-4] + config.get("append_to_name").get_value() + '.pdf')
         else:
             output_file = os.path.join(config["output_folder"].get_value(), fil)
+        if rename is not None:        
+            output_file = rename(output_file, NRExtractor(input_file).extract(get_hash=True))
 
         logging.info(f"{count}/{len(files)} Annotating and moving {os.path.basename(input_file)} ({os.path.basename(output_file)})")
 
@@ -143,6 +151,7 @@ def make_all_annotations(config: dict):
                     config["date_positions"].get_value(),
                     config["date"].get_value()
                     )
+
 
             ann.save(output_file)
         

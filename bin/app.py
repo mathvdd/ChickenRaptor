@@ -23,6 +23,7 @@ import app_widgets
 from rpt_service_manager import ServiceManager
 import rpt_player
 from rpt_db_connect import info_from_RN, info_from_barcode
+from rpt_pdf_ann import rename_C4
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -108,14 +109,16 @@ class MainWindow(QWidget):
                 self.config_handler.config.get("specific_C4Bis") | self.config_handler.config.get("AnnotateC4") | self.config_handler.config.get("general_annotate"),
                 self.service_manager,
                 'AnnotateC4Bis',
-                self.player
+                self.player,
+                rename_C4
                 ), 5,0)
         layout.addWidget(
             app_widgets.create_annotate_button(
                 self.config_handler.config.get("specific_C4Mis") | self.config_handler.config.get("AnnotateC4") | self.config_handler.config.get("general_annotate"),
                 self.service_manager,
                 'AnnotateC4Mis',
-                self.player
+                self.player,
+                rename_C4
                 ), 6,0)
         layout.addWidget(
             app_widgets.create_mail_button(

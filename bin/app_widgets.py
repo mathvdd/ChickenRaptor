@@ -183,7 +183,7 @@ def create_mail_button(config, service_manager, butname, perso_info_selector, pl
     button.clicked.connect(on_click)
     return button
 
-def create_annotate_button(config, service_manager, butname, player = None):
+def create_annotate_button(config, service_manager, butname, player = None, rename = None):
 
     button = QPushButton(butname)
     
@@ -192,7 +192,7 @@ def create_annotate_button(config, service_manager, butname, player = None):
         button.setEnabled(False)
 
         try:
-            service_manager.submit(lambda: rpt_pdf_ann.make_all_annotations(config), service_name)
+            service_manager.submit(lambda: rpt_pdf_ann.make_all_annotations(config, rename), service_name)
         except Exception as e:
             logging.critical(f"Failed during: {service_name}", exc_info=True)
 

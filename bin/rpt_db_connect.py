@@ -6,6 +6,7 @@ from io import StringIO
 import pypdf
 from rpt_config import validate_date
 import logging
+import hashlib
 
 def access2pd(db_path, column_names, table_name="T_Contrats"):
 
@@ -119,9 +120,10 @@ class NRExtractor:
     def __exit__(self, exc_type, exc_value, traceback):
         pass
 
-    def extract(self) -> dict:
+    def extract(self, get_hash=False) -> dict:
         res = {
             "RN":None,
+            "name": None,
             "date_in":None,
             "date_out":None
             }
@@ -129,13 +131,21 @@ class NRExtractor:
         with open(self.pdf_path, "rb") as fp:
             reader = pypdf.PdfReader(fp)
             text = reader.pages[0].extract_text()
-        
+            
+            if get_hash:
+                hasher = hashlib.sha256()
+                for chunk in iter(lambda: fp.read(8192), b""):
+                    hasher.update(chunk)
+                res["hash"] = hasher.hexdigest()
+
         for line in text.split("\n"):
 
             if line.startswith("TRAVAILLEUR"):
                 res["RN"] = int(line[13:34].replace(" ",""))
+                res["name"] = line[35:]
             elif line.startswith("WERKNEMER"):
                 res["RN"] = int(line[11:32].replace(" ",""))
+                res["name"] = line[33:]
 
             elif line.startswith("Date de début de l'occupation"):
                 date = line[31:48].replace(" ","")
@@ -154,6 +164,8 @@ class NRExtractor:
                 date = line[26:44].replace(" ","")
                 validate_date(date)
                 res["date_out"] = date
+
+
 
             if not (None in res.values()):
                 return res
