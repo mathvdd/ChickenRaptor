@@ -4,6 +4,8 @@ import pymupdf
 from rpt_barcode import read_barcode
 from rpt_config import validate_path, validate_file_path
 from rpt_db_connect import NRExtractor
+import zipfile
+import uuid
 
 class pdfAnnotater():
     def __init__(self, pdf_path:str):
@@ -88,7 +90,26 @@ def make_all_annotations(config: dict, rename = None):
 
 
     folder = config["input_folder"].get_value()
-    # files = [os.path.join(folder,f) for f in os.listdir(folder) if (os.path.isfile(os.path.join(folder,f)) and os.path.join(folder,f).endswith(".pdf"))]
+    to_unzip = [f for f in os.listdir(folder) if (os.path.isfile(os.path.join(folder,f)) and os.path.join(folder,f).endswith(".zip"))]
+    logging.info(f"{len(to_unzip)} zip found")
+    for zip_file in to_unzip:
+        with zipfile.ZipFile(os.path.join(folder, zip_file)) as zf:
+            for info in zf.infolist():
+                if info.is_dir():
+                    continue
+
+                _, ext = os.path.splitext(info.filename)
+
+                new_name = f"{uuid.uuid4().hex[:10]}{ext}"
+                output_path = os.path.join(folder, new_name)
+
+                with zf.open(info) as src, open(output_path, "wb") as dst:
+                    dst.write(src.read())
+
+                logging.info(f"Unzipping {info.filename} to {new_name}")
+        os.remove(os.path.join(folder, zip_file))
+
+
     files = [f for f in os.listdir(folder) if (os.path.isfile(os.path.join(folder,f)) and os.path.join(folder,f).endswith(".pdf"))]
     
     # for f in os.listdir(config["input_folder"].get_value()):
