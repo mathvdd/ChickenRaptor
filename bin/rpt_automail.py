@@ -81,7 +81,10 @@ def send_emails(config: dict, perso_info_extract):
                     replace = {
                         "prenom" : pdict[config['colonne_prenom'].get_value()].lower().capitalize(),
                         "date_in_xlsx" : pdict[config['colonne_date_in'].get_value()],
-                        "date_out_xlsx" : pdict[config['colonne_date_out'].get_value()]
+                        "date_out_xlsx" : pdict[config['colonne_date_out'].get_value()],
+                        "barcode" : pdict[config['colonne_barcode'].get_value()],
+                        "date_in" : pdict["date_in"] if pdict.get("date_in") else None,
+                        "date_out" : pdict["date_out"] if pdict.get("date_out") else None
                     },
                     log_name = "mail_body")
                 .replace("\\n", "\n")
