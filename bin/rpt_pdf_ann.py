@@ -81,7 +81,7 @@ class pdfAnnotater():
 def rename_C4(output_path, paramdict):
     head, tail = os.path.split(output_path)
     root, ext = os.path.splitext(tail)
-    new_name = os.path.join( head, (paramdict['name'][:].replace(' ', '_') + '_' + paramdict['hash'][:4] + ext).replace('__','_'))
+    new_name = os.path.join( head, f"{paramdict['name'][:].replace(' ', '_')}_{paramdict['date_out'].replace('/','_')}_{paramdict['hash'][:4]}{ext}".replace('__','_'))
     return new_name
 
 def make_all_annotations(config: dict, rename = None):
