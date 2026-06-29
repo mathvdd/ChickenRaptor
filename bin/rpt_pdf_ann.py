@@ -1,7 +1,7 @@
 import logging
 import os
 import pymupdf
-from rpt_barcode import read_barcode
+from rpt_barcode import read_barcode_dpis
 from rpt_config import validate_path, validate_file_path
 from rpt_db_connect import NRExtractor
 import zipfile
@@ -124,7 +124,7 @@ def make_all_annotations(config: dict, rename = None):
 
         input_file = os.path.join(config["input_folder"].get_value(), fil)
         if config.get("rename_to_barcode") and config["rename_to_barcode"].get_value():
-            output_file = os.path.join(config["output_folder"].get_value(), read_barcode(input_file) + '.pdf')
+            output_file = os.path.join(config["output_folder"].get_value(), read_barcode_dpis(input_file) + '.pdf')
         elif config.get("append_to_name") is not None:
             output_file = os.path.join(config["output_folder"].get_value(),  fil[:-4] + config.get("append_to_name").get_value() + '.pdf')
         else:
