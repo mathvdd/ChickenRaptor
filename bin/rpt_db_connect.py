@@ -143,10 +143,10 @@ class NRExtractor:
         for line in text.split("\n"):
 
             if line.startswith("TRAVAILLEUR"):
-                res["RN"] = int(line[13:34].replace(" ",""))
+                res["RN"] = line[13:34].replace(" ","")
                 res["name"] = line[35:]
             elif line.startswith("WERKNEMER"):
-                res["RN"] = int(line[11:32].replace(" ",""))
+                res["RN"] = line[11:32].replace(" ","")
                 res["name"] = line[33:]
 
             elif line.startswith("Date de début de l'occupation"):
