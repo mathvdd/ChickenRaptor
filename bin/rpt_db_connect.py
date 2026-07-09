@@ -168,9 +168,30 @@ class NRExtractor:
                 res["date_out"] = date
 
 
-
             if not (None in res.values()):
                 return res
+            
+        #try with pymupdf if did not work
+        import fitz
+
+        with fitz.open(self.pdf_path) as doc:
+            doc = fitz.open(self.pdf_path)
+
+        page = doc[0]
+        blocks = page.get_text("blocks")
+        for block in blocks:
+            if block[5] == 101:
+                res['RN'] = ''.join(block[4].split("\n")[:11])
+                res['name'] = ' '.join(block[4].split("\n")[11:]).rstrip()
+            elif block[5] == 106:
+                blstr = ''.join(block[4].split("\n"))
+                res['date_in'] = blstr[:2] + '/' + blstr[2:4] + '/' + blstr[4:8]
+            elif block[5] == 107:
+                blstr = ''.join(block[4].split("\n"))
+                res['date_out'] = blstr[:2] + '/' + blstr[2:4] + '/' + blstr[4:8]
+                break
+        if not (None in res.values()):
+            return res
 
         raise ValueError(f"Could not extract info from {self.pdf_path}: {res}")
 
