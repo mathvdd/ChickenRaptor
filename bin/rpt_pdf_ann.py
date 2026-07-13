@@ -173,6 +173,13 @@ def make_all_annotations(config: dict, rename = None):
                     config["date"].get_value()
                     )
 
+            if config.get("start_date_positions") is not None:
+                start_date = NRExtractor(input_file).extract()['date_in']
+                ann.add_texts(
+                    config["start_date_positions"].get_value(),
+                    "  ".join(start_date).replace("/", "")
+                    )
+
 
             ann.save(output_file)
         

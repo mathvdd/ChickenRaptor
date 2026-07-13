@@ -144,6 +144,7 @@ class RptConfig():
             "AnnotateC4" : {
                 "x_positions" : ConfigElement([], list, display="Positions X"), #[[page_nb, x, y],]
                 "date_positions" : ConfigElement([], list, display="Position date"),
+                "start_date_positions" : ConfigElement([[1,0.69,0.372]], list, display="Position start_date"),
                 "signature_positions" : ConfigElement([], list, display="Positions Signature"),
                 "cachet_positions" : ConfigElement([], list, display="Positions Cachet"),
                 "append_to_name" : ConfigElement("_signe", str, display="Suffixe renommage"),
