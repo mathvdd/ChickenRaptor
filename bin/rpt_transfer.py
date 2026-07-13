@@ -10,9 +10,9 @@ def transfer(config):
     dest_JBE_path = validate_path(config["dest_JBE"].get_value(), "dest_JBE")
 
     if os.name == "nt":
-        files = [f for f in os.listdir(source_path) if (os.path.isfile(os.path.join(source_path,f)) and os.path.join(source_path,f).endswith(".pdf") and os.path.join(source_path,f).startswith("C"))]
+        files = [f for f in os.listdir(source_path) if (os.path.isfile(os.path.join(source_path,f)) and (os.path.join(source_path,f).endswith(".pdf") or os.path.join(source_path,f).endswith(".PDF")) and os.path.join(source_path,f).startswith("C"))]
     else:
-        files = [f for f in os.listdir(source_path) if (os.path.isfile(os.path.join(source_path,f)) and os.path.join(source_path,f).endswith(".pdf"))]
+        files = [f for f in os.listdir(source_path) if (os.path.isfile(os.path.join(source_path,f)) and (os.path.join(source_path,f).endswith(".pdf") or os.path.join(source_path,f).endswith(".PDF")))]
     files_JBE = [f for f in files if f.endswith('JBE.pdf')]
 
     logging.info(f"{len(files)} files found, including ({len(files_JBE)} JBE files")

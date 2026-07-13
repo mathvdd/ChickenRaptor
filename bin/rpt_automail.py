@@ -46,7 +46,7 @@ def send_emails(config: dict, perso_info_extract):
 
 
     for f in os.listdir(config["to_send_folder_path"].get_value()):
-        if f.endswith('.pdf'):
+        if (f.endswith('.pdf') or f.endswith('.PDF')):
             files.append(os.path.join(config["to_send_folder_path"].get_value(), f))
     logging.info(f"{len(files)} pdf files found")
     

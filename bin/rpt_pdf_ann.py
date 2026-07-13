@@ -110,7 +110,7 @@ def make_all_annotations(config: dict, rename = None):
         os.remove(os.path.join(folder, zip_file))
 
 
-    files = [f for f in os.listdir(folder) if (os.path.isfile(os.path.join(folder,f)) and os.path.join(folder,f).endswith(".pdf"))]
+    files = [f for f in os.listdir(folder) if (os.path.isfile(os.path.join(folder,f)) and (os.path.join(folder,f).endswith(".pdf") or os.path.join(folder,f).endswith(".PDF")))]
     
     # for f in os.listdir(config["input_folder"].get_value()):
     #     if f.endswith('.pdf'):
