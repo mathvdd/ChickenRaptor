@@ -13,6 +13,9 @@ class pdfAnnotater():
         self.file_handle = pymupdf.open(self.pdf_path)
         self.r_w = self.file_handle[0].rect.width
         self.r_h = self.file_handle[0].rect.height
+        # self.rotation = self.file_handle[0].rotation
+        # self.file_handle[0].set_rotation(0)
+        # self.file_handle[1].set_rotation(0)
         
     def __enter__(self):
         return self
@@ -27,14 +30,30 @@ class pdfAnnotater():
 
     def add_image(self, page, pos, size, im):
     # pymupdf uses coordinates of a box (top left and bottom right corners)
-
-        pos_x = int(pos[0]*self.r_w)
-        pos_y = int(pos[1]*self.r_h)
-        p1 = pymupdf.Point(pos_x, pos_y)
-        p2 = pymupdf.Point(pos_x+size[0], pos_y+size[1])
+        
+        
+        if (page.rotation == 270):
+            size= [size[0], size[1]]
+            oldposx, oldposy = pos
+            pos[0] = 1-oldposy
+            pos[1] = oldposx
+            pos_x = int((pos[0]-size[0]/self.r_h)*self.r_h)
+            pos_y = int((pos[1])*self.r_w)
+            p1 = pymupdf.Point(pos_x, pos_y)
+            p2 = pymupdf.Point(pos_x+size[0], pos_y+size[1])
+            rect = pymupdf.Rect(p1, p2)
+            rotate_image=page.rotation
+        else:
+            pos_x = int(pos[0]*self.r_w)
+            pos_y = int(pos[1]*self.r_h)
+            p1 = pymupdf.Point(pos_x, pos_y)
+            p2 = pymupdf.Point(pos_x+size[0], pos_y+size[1])
+            rect = pymupdf.Rect(p1, p2)
+            rotate_image=0
+            
         # first_page.insert_image(pymupdf.Rect(p1,p2), filename= paraphe)
         with pymupdf.open(im) as img_doc:
-            page.show_pdf_page(pymupdf.Rect(p1, p2),img_doc,0)
+            page.show_pdf_page(rect,img_doc,0, rotate=rotate_image)
 
     def add_images(self, poss, impath, imsize):
         #dict of type {page_nb:[(x1,y1),(x2,y2)]}
