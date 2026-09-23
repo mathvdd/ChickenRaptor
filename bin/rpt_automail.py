@@ -119,3 +119,12 @@ def send_emails(config: dict, perso_info_extract):
         except Exception as e:
             logging.debug(e)            
             logging.warning(f"{count}/{len(files)} Operation aborted for {f}")
+
+
+    if config.get("open_explorer") and config["open_explorer"].get_value():
+        logging.info(f"Opening {config['copy_after_send_path'].get_value()} in the file explorer")
+        if os.name == "posix":
+            os.system(f"xdg-open {config['copy_after_send_path'].get_value()}")
+        elif os.name == "nt":
+            import subprocess
+            subprocess.Popen(["explorer", config["copy_after_send_path"].get_value()])

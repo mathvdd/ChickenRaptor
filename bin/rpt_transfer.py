@@ -48,9 +48,9 @@ def transfer(config):
             os.remove(file)
 
     if config.get("open_explorer") and config["open_explorer"].get_value():
-        logging.info(f"Opening {source_path} in the file explorer")
+        logging.info(f"Opening {dest_path} in the file explorer")
         if os.name == "posix":
-            os.system(f"xdg-open {source_path}")
+            os.system(f"xdg-open {dest_path}")
         elif os.name == "nt":
             import subprocess
             subprocess.Popen(["explorer", source_path])

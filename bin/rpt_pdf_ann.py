@@ -18,7 +18,7 @@ class pdfAnnotater():
         # self.file_handle[1].set_rotation(0)
 
         if self.file_handle[0].rotation != 0:
-            logging.warning("pdf with rotation detection, check the result")
+            logging.warning("pdf with rotation detected, check the result")
         
     def __enter__(self):
         return self

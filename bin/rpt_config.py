@@ -191,7 +191,8 @@ class RptConfig():
                 "copy_after_send_path" : ConfigElement("", str, display=None),
                 "delete_after_sent" : ConfigElement(False, bool, display="Supprimer après envoi"),
                 "mail_subject" : ConfigElement("Available fields: date_in: {date_in}, date_out: {date_out}", str, display="Sujet"),
-                "mail_body" : ConfigElement("Available fields: prenom: {prenom}", str, display="Corps de texte")
+                "mail_body" : ConfigElement("Available fields: prenom: {prenom}", str, display="Corps de texte"),
+                "open_explorer" : ConfigElement(True, bool, display="Ouvrir Explorer")
             },
     
             "send_email_contract" : {
@@ -199,7 +200,8 @@ class RptConfig():
                 "copy_after_send_path" : ConfigElement("", str, display=None),
                 "delete_after_sent" : ConfigElement(False, bool, display="Supprimer après envoi"),
                 "mail_subject" : ConfigElement("Available fields: date_in_xlsx: {date_in_xlsx}", str, display="Sujet"),
-                "mail_body" : ConfigElement("Available fields: prenom: {prenom}, date_in_xlsx: {date_in_xlsx}", str, display="Corps de texte")
+                "mail_body" : ConfigElement("Available fields: prenom: {prenom}, date_in_xlsx: {date_in_xlsx}", str, display="Corps de texte"),
+                "open_explorer" : ConfigElement(True, bool, display="Ouvrir Explorer")
             },
         }
 

@@ -5,6 +5,7 @@ pdf2image
 pyzbar
 PyMuPDF
 pyodbc
+openpyxl
 
 # install Poppler on Windows and add the bin folder to PATH or poppler-utils on Linux (pdf2image dependency)
 # install zbar library (pyzbar dependency)
