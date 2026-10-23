@@ -18,6 +18,17 @@ def access2pd(db_path, column_names, table_name="T_Contrats"):
         text = raw.decode("utf-8", errors="replace")  #OLE columns are not decoded properly
         df = pd.read_csv(StringIO(text))
 
+        raw_div = subprocess.check_output(["mdb-export", db_path, "T_Divisions"])
+        df_div = pd.read_csv(StringIO(raw_div.decode("utf-8", errors="replace")))
+        print(df.columns)
+
+        df = df.merge(
+            df_div[["NUMDIV", "MAILCONT"]],
+            left_on="Division",
+            right_on="NUMDIV",
+            how="left"
+        )
+
         df = df[[
             "Nom",
             "Prenom",
@@ -26,8 +37,12 @@ def access2pd(db_path, column_names, table_name="T_Contrats"):
             "DateIn",
             "DateOut",
             "Id",
-            "Division"
+            "Division",
+            "Iban",
+            "TRI1",
+            "MAILCONT"
             ]]
+        
     elif os.name == "nt":
         import pyodbc
 
@@ -36,9 +51,29 @@ def access2pd(db_path, column_names, table_name="T_Contrats"):
             rf"DBQ={db_path};"
         )
 
+        query = f"""
+            SELECT
+                c.Nom,
+                c.Prenom,
+                c.RegistreNational,
+                c.EMail,
+                c.DateIn,
+                c.DateOut,
+                c.Id,
+                c.Division,
+                c.Iban,
+                c.TRI1,
+                d.MAILCONT
+            FROM [{table_name}] AS c
+            LEFT JOIN T_Divisions AS d
+                ON c.Division = d.NUMDIV
+            """
+
         try:
-            df = pd.read_sql(f"SELECT Nom, Prenom, RegistreNational, EMail, DateIn, DateOut, Id, Division FROM [{table_name}]", conn)
+            df = pd.read_sql(query, conn)
         except Exception as e:
+
+            conn.rollback()
             logging.debug(e)
             logging.exception("Could not execute query to access database")
             raise
@@ -46,14 +81,53 @@ def access2pd(db_path, column_names, table_name="T_Contrats"):
         finally:
             conn.close()
 
+    df.rename(columns={"Iban":"A1"}, inplace=True)
     df["Barcode"] = "C" + df["Id"].astype(str) + df["Division"].astype(str)
     df["DateIn"] = pd.to_datetime(df["DateIn"], errors="coerce", format="%m/%d/%y %H:%M:%S",)
     df["DateOut"] = pd.to_datetime(df["DateOut"], errors="coerce", format="%m/%d/%y %H:%M:%S",)
-    df = df[["Nom", "Prenom", "RegistreNational", "EMail", "DateIn", "DateOut", "Barcode"]].sort_values("DateIn", ascending=False)
+    df = df[["Id", "Nom", "Prenom", "RegistreNational", "EMail", "DateIn", "DateOut", "Barcode", "A1", "MAILCONT"]].sort_values("DateIn", ascending=False)
     df["DateIn"] = df["DateIn"].dt.strftime("%d/%m/%Y")
     df["DateOut"] = df["DateOut"].dt.strftime("%d/%m/%Y")
+    df["A1"] = df["A1"] = df["A1"].astype(str).str.split().str[0]
 
     return df
+
+def update_tri1(db_path, row_id, table_name="T_Contrats"):
+
+    if os.name == "posix":
+        logging.exception("updating database not supported on linux")
+
+    elif os.name == "nt":
+
+        import pyodbc
+
+        conn = pyodbc.connect(
+            r"DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};"
+            rf"DBQ={db_path};"
+        )
+
+        try:
+            cursor = conn.cursor()
+
+            cursor.execute(
+                f"UPDATE [{table_name}] SET TRI1 = ? WHERE Id = ?",
+                ("OK", row_id)
+            )
+
+            if cursor.rowcount == 0:
+                raise ValueError(f"No row found with Id={row_id}")
+
+            conn.commit()
+
+        except Exception as e:
+            conn.rollback()
+            logging.debug(e)
+            logging.exception("Could not execute query to access database")
+            raise
+
+        finally:
+            conn.close()
+
 
 
 def xlsx2pd(db_path, column_names):
@@ -107,6 +181,19 @@ class DbData:
         #         logging.warning(
         #             f"Duplicates not matching in the table, taking more recent entry"
         #         )
+            
+        return res.iloc[0].to_dict()
+
+    def return_from_a1(self, a1_number : str) -> dict:
+
+        res = self.tab.loc[self.tab["A1"] == a1_number]
+
+        if len(res) == 0:
+            raise ValueError(
+                f"Did not find a match in the database for {a1_number}"
+            )
+        elif len(res) != 1:
+            logging.warning(f"Expected one occurence for A1 {a1_number}, found {len(res)} (using most recent):\n{res}.")
             
         return res.iloc[0].to_dict()
 
@@ -228,6 +315,16 @@ def info_from_barcode(xlsx_data: DbData, file : str) -> dict:
     pdict = xlsx_data.return_from_barcode(barcode)
     
     for item in [xlsx_data.column_names['colonne_mail'], xlsx_data.column_names['colonne_prenom'], xlsx_data.column_names['colonne_date_in']]:
+        if item not in pdict.keys():
+            raise ValueError(f"Parameter '{item}' not found in the database")
+
+    return pdict
+
+def a1_selector(xlsx_data: DbData, file : str) -> dict:
+    a1_number = os.path.basename(file).split('_')[0]
+    pdict = xlsx_data.return_from_a1(a1_number)
+    
+    for item in [xlsx_data.column_names['colonne_mail'], xlsx_data.column_names['colonne_nom'], xlsx_data.column_names['colonne_prenom']]:
         if item not in pdict.keys():
             raise ValueError(f"Parameter '{item}' not found in the database")
 

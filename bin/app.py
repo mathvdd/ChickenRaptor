@@ -22,7 +22,7 @@ import rpt_config
 import app_widgets
 from rpt_service_manager import ServiceManager
 import rpt_player
-from rpt_db_connect import info_from_RN, info_from_barcode
+from rpt_db_connect import info_from_RN, info_from_barcode, a1_selector
 from rpt_pdf_ann import rename_C4
 
 class MainWindow(QWidget):
@@ -36,7 +36,7 @@ class MainWindow(QWidget):
             app.setFont(font)
 
         self.setWindowTitle('ChickenRaptor')
-        self.setFixedSize(QSize(1050, 550))
+        self.setFixedSize(QSize(1150, 600))
 
         main_layout = QGridLayout(self)
         self.setLayout(main_layout)
@@ -61,7 +61,7 @@ class MainWindow(QWidget):
         #         background-color: rgba(255,255,255,180);
         #     }
         # """)
-        layout.addWidget(self.logger_widget, 0, 1, 10, 1)
+        layout.addWidget(self.logger_widget, 0, 1, 11, 1)
         self.logger = app_logger.setup_logging(level=logging.DEBUG)
         app_logger.attach_qt_logger(self.logger, self.logger_widget)
         logging.info("CHICKEN RAPTOR IS ON STEROIDS")
@@ -101,9 +101,18 @@ class MainWindow(QWidget):
                 'TransfertContrat',
                 self.player
                 ), 3,0)
+        layout.addWidget(
+            app_widgets.create_mail_button(
+                self.config_handler.config.get("mail_server") | self.config_handler.config.get("send_email_A1") | self.config_handler.config.get("database"),
+                self.service_manager,
+                "A1",
+                a1_selector,
+                self.player
+                )
+                , 4, 0)
     
 
-        layout.addWidget(app_widgets.create_header_label("C4"),4,0)
+        layout.addWidget(app_widgets.create_header_label("C4"),5,0)
         layout.addWidget(
             app_widgets.create_annotate_button(
                 self.config_handler.config.get("specific_C4Bis") | self.config_handler.config.get("AnnotateC4") | self.config_handler.config.get("general_annotate"),
@@ -111,7 +120,7 @@ class MainWindow(QWidget):
                 'AnnotateC4Bis',
                 self.player,
                 rename_C4
-                ), 5,0)
+                ), 6,0)
         layout.addWidget(
             app_widgets.create_annotate_button(
                 self.config_handler.config.get("specific_C4Mis") | self.config_handler.config.get("AnnotateC4") | self.config_handler.config.get("general_annotate"),
@@ -119,7 +128,7 @@ class MainWindow(QWidget):
                 'AnnotateC4Mis',
                 self.player,
                 rename_C4
-                ), 6,0)
+                ), 7,0)
         layout.addWidget(
             app_widgets.create_mail_button(
                 self.config_handler.config.get("mail_server") | self.config_handler.config.get("send_email_C4") | self.config_handler.config.get("database"),
@@ -128,20 +137,20 @@ class MainWindow(QWidget):
                 info_from_RN,
                 self.player
                 )
-                , 7, 0)
+                , 8, 0)
         
         label = QLabel(self)
         pixmap = QPixmap(os.path.join(self.config_handler.package_path, '..', 'assets', 'ChickenRaptor_medium.png'))
         label.setPixmap(pixmap)
-        layout.addWidget(label, 8, 0)
+        layout.addWidget(label, 9, 0)
 
         layout.addWidget(
             app_widgets.create_update_button(
                 self.logger_widget,
                 self.service_manager,
                 self.player
-                ), 9,0)
-        layout.setRowStretch(9, 1)
+                ), 10,0)
+        layout.setRowStretch(10, 1)
 
 
         # parameter_page

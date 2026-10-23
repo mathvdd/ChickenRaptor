@@ -183,7 +183,10 @@ class RptConfig():
                 "colonne_registre_national" : ConfigElement("RegistreNational", str, display='Colonne "Registre National"'),
                 "colonne_date_in" : ConfigElement("DateIn", str, display='Colonne "date in"'),
                 "colonne_date_out" : ConfigElement("DateOut", str, display='Colonne "date out"'),
-                "colonne_barcode" : ConfigElement("Barcode", str, display='Colonne "barcode"')
+                "colonne_barcode" : ConfigElement("Barcode", str, display='Colonne "barcode"'),
+                "colonne_TRI1" : ConfigElement("TRI1", str, display='Colonne "TR1"'),
+                "colonne_A1" : ConfigElement("Iban", str, display='Colonne "A1"'),
+
             },
 
             "send_email_C4" : {
@@ -201,6 +204,18 @@ class RptConfig():
                 "delete_after_sent" : ConfigElement(False, bool, display="Supprimer après envoi"),
                 "mail_subject" : ConfigElement("Available fields: date_in_xlsx: {date_in_xlsx}", str, display="Sujet"),
                 "mail_body" : ConfigElement("Available fields: prenom: {prenom}, date_in_xlsx: {date_in_xlsx}", str, display="Corps de texte"),
+                "open_explorer" : ConfigElement(True, bool, display="Ouvrir Explorer")
+            },
+
+            "send_email_A1" : {
+                "to_send_folder_path" : ConfigElement("", str, display="Dossier à traiter"),
+                "copy_after_send_path" : ConfigElement("", str, display=None),
+                "delete_after_sent" : ConfigElement(False, bool, display="Supprimer après envoi"),
+                "mail_subject" : ConfigElement("Formulaire A1", str, display="Sujet"),
+                "mail_body" : ConfigElement("Available fields: prenom: {prenom}", str, display="Corps de texte"),
+                "cc_extra" : ConfigElement("", str, display=None),
+                "cc_to_mailcont" : ConfigElement(True, bool, display=None), 
+                "update_TRI1" : ConfigElement(True, bool, display=None), 
                 "open_explorer" : ConfigElement(True, bool, display="Ouvrir Explorer")
             },
         }

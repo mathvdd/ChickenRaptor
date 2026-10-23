@@ -63,7 +63,15 @@ def send_emails(config: dict, perso_info_extract):
             msg = EmailMessage()
             msg["to"] = pdict[config['colonne_mail'].get_value()]
             msg["from"] = config["sender_email"].get_value()
-            
+
+            ccs = []
+            if config.get("cc_extra") is not None:
+                ccs.append(config["cc_extra"].get_value())
+            if config.get("cc_to_mailcont") is not None and config["cc_to_mailcont"].get_value():
+                ccs.append(pdict['MAILCONT'])
+            if len(ccs) > 0:
+                msg["Cc"] = ", ".join(ccs)
+
             msg["subject"] = replace_in_text(
                     to_parse = config["mail_subject"].get_value(),
                     replace = {
@@ -106,6 +114,9 @@ def send_emails(config: dict, perso_info_extract):
                     server.starttls()
                 server.login(config['sender_email'].get_value(), config['sender_pwd'].get_value())
                 server.send_message(msg)
+
+            if config.get("update_TRI1") is not None and config["update_TRI1"].get_value():
+                rpt_db_connect.update_tri1(db_path, pdict["Id"])
 
             if copy_after_send_path is not None:
                 logging.info(f"Copying {f}")
