@@ -79,7 +79,9 @@ def send_emails(config: dict, perso_info_extract):
                         "date_out_xlsx" : pdict[config['colonne_date_out'].get_value()],
                         "barcode" : pdict[config['colonne_barcode'].get_value()],
                         "date_in" : pdict["date_in"] if pdict.get("date_in") else None,
-                        "date_out" : pdict["date_out"] if pdict.get("date_out") else None
+                        "date_out" : pdict["date_out"] if pdict.get("date_out") else None,
+                        "a1" : pdict["A1"] if pdict.get("A1") else None
+
                     },
                     log_name = "mail_subject")
                     
@@ -92,7 +94,8 @@ def send_emails(config: dict, perso_info_extract):
                         "date_out_xlsx" : pdict[config['colonne_date_out'].get_value()],
                         "barcode" : pdict[config['colonne_barcode'].get_value()],
                         "date_in" : pdict["date_in"] if pdict.get("date_in") else None,
-                        "date_out" : pdict["date_out"] if pdict.get("date_out") else None
+                        "date_out" : pdict["date_out"] if pdict.get("date_out") else None,
+                        "a1" : pdict["A1"] if pdict.get("A1") else None
                     },
                     log_name = "mail_body")
                 .replace("\\n", "\n")
